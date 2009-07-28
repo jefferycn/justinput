@@ -1,0 +1,25 @@
+[
+    {"source": "app\/assistants\/stage-assistant.js"},
+    {
+        "source": "app\/assistants\/word-pad-assistant.js",
+        "scenes": "word-pad"
+    },
+    {
+    	"source": "app\/models\/IME.js"
+	},
+    {
+    	"source": "app\/models\/PreFixMap.js"
+	},
+    {
+    	"source": "app\/models\/PreFixMultiMap.js"
+	},
+    {
+    	"source": "app\/models\/ResultSet.js"
+	},
+    {
+    	"source": "app\/models\/PinyingSource.js"
+	},
+    {
+    	"source": "app\/models\/WordLibrary.js"
+	}
+]
