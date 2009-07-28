@@ -1,68 +1,91 @@
 function WordPadAssistant() {
-	/* this is the creator function for your scene assistant object. It will be passed all the 
-	   additional parameters (after the scene name) that were passed to pushScene. The reference
-	   to the scene controller (this.controller) has not be established yet, so any initialization
-	   that needs the scene controller should be done in the setup function below. */
+	
 }
 
 WordPadAssistant.prototype.setup = function() {
-	/* this function is for setup tasks that have to happen when the scene is first created */
 	this.controller.setupWidget('text',
          this.attributes = {
-             hintText: $L('youjf.com'),
+             hintText: $L('GPL2 Allrights Received'),
              multiline: true,
              focus: true,
              textCase: Mojo.Widget.steModeLowerCase
          },
          this.model = {}
     );
-    this.controller.setupWidget('result',
-         this.attributes = {
-             multiline: false
-         },
-         this.model = {
-            disabled: true
-    });
-    this.controller.setupWidget('select',
-         this.attributes = {
-             multiline: true
-         },
-         this.model = {
-            disabled: true
-    });
-	var panel = {
+	this.panel = {
 		text: $('text'),
-		//input: $('input'),
 		result: $('result'),
+		//debug: $('debug'),
 		select: $('select')
 	};
-	// space = 32
-	this.ime = new IME(panel);
-	//ime.init(panel)
+
+	this.ime = new IME(this.panel);
 	
-	this.controller.setupWidget('toggle',
-		this.attributes = {
-            modelProperty: "value",
-			trueValue: "true",
-			trueLabel: 'Yes',
-			falseValue: "false",
-			falseLabel: 'No'
-        },
-		this.model = {
-			value: 'true',
-            disabled: false
-    });
-    
-    this.controller.listen("toggle",
-    	Mojo.Event.propertyChange,
-    	this.toggleChange.bindAsEventListener(this)
-    );
-    
-	/* use Mojo.View.render to render view templates and add them to the scene, if needed. */
+    this.cmdMenuModel = {
+		items: [
+			{
+				toggleCmd:'imeOn',
+				items:[
+					{label: $L('中'), command:'imeOn'},
+					{label: $L('英'), command:'imeOff'}
+				]
+			},
+			{
+				items:[
+					{label: $L('M'), command:'imeMessaging'}
+				]
+			},
+			{
+				items:[
+					{label: $L('复'), command:'imeCopy'}
+				]
+			},
+			{
+				items:[
+					{label: $L('粘'), command:'imePaste'}
+				]
+			},
+			{
+				items:[
+					{label: $L('清'), command:'imeClean'}
+				]
+			}
+		]
+	};
 	
-	/* setup widgets here */
-	
-	/* add event handlers to listen to events from widgets */
+	this.controller.setupWidget(Mojo.Menu.commandMenu, undefined, this.cmdMenuModel);
+}
+
+WordPadAssistant.prototype.handleCommand = function(event) {
+	if(event.type == Mojo.Event.command) {
+		if(event.command == 'imeOn' || event.command == 'imeOff') {
+			this.toggleChange();
+		}
+		if(event.command == 'imeCopy') {
+			var text = this.controller.get('text');
+			text.focus();
+			text.mojo.setCursorPosition(0, text.mojo.getValue().length);
+			this.controller.doExecCommand(event, 'copy');
+		}
+		if(event.command == 'imePaste') {
+			this.controller.get('text').focus();
+			PalmSystem.paste();
+		}
+		if(event.command == 'imeClean') {
+			this.controller.get('text').mojo.setValue('');
+		}
+		if(event.command == 'imeMessaging') {
+			this.controller.serviceRequest('palm://com.palm.applicationManager', {
+     			method: 'launch',
+     			parameters: {
+         			id: "com.palm.app.messaging",
+         			params: {
+         				messageText: this.panel.text.mojo.getValue()
+         			}
+         		}
+			});
+		}
+	}
 }
 
 WordPadAssistant.prototype.toggleChange = function() {
@@ -70,17 +93,11 @@ WordPadAssistant.prototype.toggleChange = function() {
 }
 
 WordPadAssistant.prototype.activate = function(event) {
-	/* put in event handlers here that should only be in effect when this scene is active. For
-	   example, key handlers that are observing the document */
 }
 
 
 WordPadAssistant.prototype.deactivate = function(event) {
-	/* remove any event handlers you added in activate and do any other cleanup that should happen before
-	   this scene is popped or another scene is pushed on top */
 }
 
 WordPadAssistant.prototype.cleanup = function(event) {
-	/* this function should do any cleanup needed before the scene is destroyed as 
-	   a result of being popped off the scene stack */
 }
