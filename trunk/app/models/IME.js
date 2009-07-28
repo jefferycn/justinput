@@ -51,7 +51,6 @@ IME.prototype = {
 		this.selectedWordIndexs = [];
 		this.selectedResult = "";
 		this.inputPinyin = [];
-		//this.update();
 	},
 	toggleIme: function() {
 		if(this.active == true) {
@@ -64,7 +63,6 @@ IME.prototype = {
 		this.wordMap = new PrefixMultiMap([1,{},0]);
 		var self = this;
 		WordLibrary.loadWords(
-			// "PinyinWordLibrary.words." + level + ".js", 
 			// use database to get the words
 			function(word, count){
 				var wordKey = [];
@@ -84,14 +82,15 @@ IME.prototype = {
 		PinyingSource.init();
 	},
 	textOnKeyDown: function(e) {
+		if(this.active == false) {
+			return true;
+		}
 		if(Mojo.Char.isDeleteKey(e.keyCode)) {
 			if(this.inputPhase.length > 0) {
 				var oldString = this.inputPhase;
 				this.inputPhase = oldString.substr(0, oldString.length - 1);
-				//this.input.update(this.inputPhase);
 				this.inputSize = this.inputPhase.length;
-				//this.resetInputPhase(oldString);
-				//this.refreshInputPanel();
+				this.resetInputPhase(oldString);
 				this.update();
 				e.returnValue = false;
 			}else {
@@ -123,8 +122,11 @@ IME.prototype = {
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
 			if(key >= 97 && key <= 122 || key == 39 || key == 222 || key >= 65 && key <= 90) {
+				if(key >= 65 && key <= 90) {
+					// force uppercase to lower case
+					key += 32;
+				}
                 this.inputPhase += String.fromCharCode(key)
-				//this.input.update(this.inputPhase);
 				this.inputSize = this.inputPhase.length;
 				this.update();
 			}else {
@@ -134,7 +136,7 @@ IME.prototype = {
 						if(key == 32) {
 							key = 49;
 						}
-                    	var digit = key - 48;
+						var digit = key - 48;
 						digit = digit ? digit : 10;
 						digit --;
 						this.phaseSelected(digit);
@@ -145,6 +147,7 @@ IME.prototype = {
 			}
 			e.returnValue = false;
 		}
+		return false;
 	},
 	selectingWordsPageUp: function(){
 		if(!this.selectingWordsResultSet)
@@ -225,7 +228,6 @@ IME.prototype = {
 		this.selectedWordIndexs.push(index);
 		if(this.inputCursorIndex != this.inputPhase.length){
 			this.inputCursorIndex = this.inputPhase.length;
-			//this.refreshInputPanel();
 		}
 		if(this.getLastSelectedIndex() >= this.inputPhase.length){
 			this.sendResult(this.selectedWords.join(""));
@@ -234,15 +236,9 @@ IME.prototype = {
 			this.selectedWords.length = 0;
 			this.selectedWordIndexs.length = 0;
 			this.inputSize = 0;
-			//this.refreshInputPanel();
 		}
 		this.update();
 	},
-//	refreshInputPanel: function(){
-//		this.input.innerHTML = "";
-//		this.input.appendChild (document.createTextNode(this.inputPhase.substr(0, this.inputCursorIndex)));
-//		this.input.appendChild (document.createTextNode(this.inputPhase.substr(this.inputCursorIndex)));
-//	},
 	sendResult: function(str) {
 		// save selected phase to database here
 		// by Jeffery
@@ -276,7 +272,7 @@ IME.prototype = {
 		this.refreshSelectingPanel();
 	},
 	refreshResultPanel: function(){
-		this.result.mojo.setValue(this.selectedWords.join("") + this.inputPhase.substr(this.getLastSelectedIndex()));
+		this.result.update(this.selectedWords.join("") + this.inputPhase.substr(this.getLastSelectedIndex()));
 	},
 	getLastSelectedIndex: function(){
 		if(this.selectedWordIndexs && this.selectedWordIndexs.length > 0) {
@@ -293,6 +289,6 @@ IME.prototype = {
 		for(var i=0;i<words.length;i++){
 			html += ((i+1)%10) + '.' + words[i] + '';
 		}
-		this.select.mojo.setValue(html ? html : '');
+		this.select.update(html ? html : '');
 	}
 };
