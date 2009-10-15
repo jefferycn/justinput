@@ -268,7 +268,7 @@ IME.prototype = {
 		this.text.mojo.setCursorPosition(0, result.length);
 		document.execCommand('copy');
 		this.text.mojo.setCursorPosition(nowPos, nowPos);
-		//WordLibrary.addWords([str], 99);
+		WordLibrary.addWords([str], 99);
 	},
 	update: function(){
 		var i = this.getLastSelectedIndex();
