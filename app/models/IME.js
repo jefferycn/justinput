@@ -1,9 +1,8 @@
 var IME = function(panel) {
 	this.text = panel.text;
-	//this.input = panel.input;
 	this.result = panel.result;
 	this.select = panel.select;
-	//this.debug = panel.debug;
+	this.debug = panel.debug;
 	this.initialize();
 }
 IME.prototype = {
@@ -17,7 +16,7 @@ IME.prototype = {
 	characters: undefined,
 	characterMap: undefined,
 	selectingWordsCurrentPage : [],
-	selectingWordsPageSize: 8,
+	selectingWordsPageSize: 3,
 	inputPhase: "",
 	inputCursorIndex: 0,
 	initialize: function() {
@@ -100,10 +99,12 @@ IME.prototype = {
 	},
 	textOnKeyPress: function(e) {
 		key = e.keyCode;
+		this.debug.update(key);
 		// , = 44
 		// . = 46
 		// @ = 64 47 38 43 45 42 40 41 36 33 35 63 59 58 37 34  45 61
 		// ' = 39
+		// s 115, d 100, 
 		if(this.active == false) {
 			return true;
 		}
@@ -112,12 +113,12 @@ IME.prototype = {
 			e.returnValue = false;
 			return false;
 		}
-		if(key == 46 && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
+		if(key == 95 && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
 			this.selectingWordsPageUp();
 			e.returnValue = false;
 			return false;
 		}
-		if(key >= 33 && key <= 38 || key >= 40 && key <= 47 || key == 58 || key == 58 || key == 61 || key == 63 || key == 64) {
+		if(key >= 33 && key <= 38 || key >= 40 && key <= 45 || key == 47 || key == 58 || key == 61 || key == 63) {
 			return String.fromCharCode(key);
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
@@ -130,11 +131,17 @@ IME.prototype = {
 				this.inputSize = this.inputPhase.length;
 				this.update();
 			}else {
-                if((key >= 48 && key <= 57) || key == 32) {
+                if(key == 64 || key <= 46 || key == 32) {
                     // choose from select list
 					if(this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0){
 						if(key == 32) {
 							key = 49;
+						}
+						if(key == 64) {
+							key = 50;
+						}
+						if(key == 46) {
+							key = 51;
 						}
 						var digit = key - 48;
 						digit = digit ? digit : 10;
@@ -242,8 +249,26 @@ IME.prototype = {
 	sendResult: function(str) {
 		// save selected phase to database here
 		// by Jeffery
-		this.text.mojo.setValue(this.text.mojo.getValue() + str);
-		WordLibrary.addWords([str], 99);
+		var exist = this.text.mojo.getValue();
+		if(exist.length > 0) {
+			var pos = this.text.mojo.getCursorPosition();
+		}else {
+			var pos = {selectionStart: 0};
+		}
+		if(pos.selectionStart < exist.length) {
+			var front = exist.substr(0, pos.selectionStart);
+			var end = exist.substr(pos.selectionStart, exist.length);
+			var result = front + str + end;
+			var nowPos = pos.selectionStart + str.length;
+		}else {
+			var result = exist + str;
+			var nowPos = result.length;
+		}
+		this.text.mojo.setValue(result);
+		this.text.mojo.setCursorPosition(0, result.length);
+		document.execCommand('copy');
+		this.text.mojo.setCursorPosition(nowPos, nowPos);
+		//WordLibrary.addWords([str], 99);
 	},
 	update: function(){
 		var i = this.getLastSelectedIndex();
