@@ -15,7 +15,7 @@ WordPadAssistant.prototype.setup = function() {
 	this.panel = {
 		text: $('text'),
 		result: $('result'),
-		//debug: $('debug'),
+		debug: $('debug'),
 		select: $('select')
 	};
 
@@ -26,28 +26,13 @@ WordPadAssistant.prototype.setup = function() {
 			{
 				toggleCmd:'imeOn',
 				items:[
-					{label: $L('中'), command:'imeOn'},
-					{label: $L('英'), command:'imeOff'}
+					{label: $L('中文'), command:'imeOn'},
+					{label: $L('英文'), command:'imeOff'}
 				]
 			},
 			{
 				items:[
-					{label: $L('M'), command:'imeMessaging'}
-				]
-			},
-			{
-				items:[
-					{label: $L('复'), command:'imeCopy'}
-				]
-			},
-			{
-				items:[
-					{label: $L('粘'), command:'imePaste'}
-				]
-			},
-			{
-				items:[
-					{label: $L('清'), command:'imeClean'}
+					{label: $L('清空'), command:'imeClean'}
 				]
 			}
 		]
@@ -94,6 +79,7 @@ WordPadAssistant.prototype.toggleChange = function() {
 
 WordPadAssistant.prototype.activate = function(event) {
 	try {
+		/**
 		this.db = openDatabase('JustInput', '', 'JustInput Data Store', 65536);
 		try {
 			// get database config
@@ -112,6 +98,7 @@ WordPadAssistant.prototype.activate = function(event) {
 	        	}).bind(this)
 	    	);
 		}
+		**/
 	}catch(e) {
 		$('debug').update(e);
 	}
