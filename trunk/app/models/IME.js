@@ -21,6 +21,7 @@ IME.prototype = {
 	pageUpKey: 95,
 	spliterKey: 39,
 	spaceKey: 32,
+	selectingKeys: [32, 64, 46],
 	inputPhase: "",
 	inputCursorIndex: 0,
 	initialize: function() {
@@ -55,6 +56,20 @@ IME.prototype = {
 		this.selectedResult = "";
 		this.inputPinyin = [];
 	},
+	setSelectingWordsPageSize: function(v) {
+		this.selectingWordsPageSize = v;
+	},
+	setSelectingKeys: function(v) {
+		this.selectingKeys = v;
+	},
+	inArray: function(v, array) {
+		for(var i = 0; i < array.length; i ++) {
+			if(v == array[i]) {
+				return true;
+			}
+		}
+		return false;
+	},
 	toggleIme: function() {
 		if(this.active == true) {
 			this.active = false;
@@ -62,23 +77,27 @@ IME.prototype = {
 			this.active = true;
 		}
 	},
+	getWordKey: function(word) {
+		var wordKey = [];
+		for(var i=0;i<word.length;i++){
+			var charPinyinList = this.characters[word.charAt(i)];
+			if(!charPinyinList)
+				return ;
+			var charPinyin = charPinyinList[0];
+			var shengmu = this.getShengmu(charPinyin);
+			var yunmu = charPinyin.substr(shengmu.length);
+			wordKey.push(shengmu);
+			wordKey.push(yunmu);
+		}
+		return wordKey;
+},
 	loadWordLibrary: function(){
 		this.wordMap = new PrefixMultiMap([1,{},0]);
 		var self = this;
 		WordLibrary.loadWords(
 			// use database to get the words
 			function(word, count){
-				var wordKey = [];
-				for(var i=0;i<word.length;i++){
-					var charPinyinList = self.characters[word.charAt(i)];
-					if(!charPinyinList)
-						return ;
-					var charPinyin = charPinyinList[0];
-					var shengmu = self.getShengmu(charPinyin);
-					var yunmu = charPinyin.substr(shengmu.length);
-					wordKey.push(shengmu);
-					wordKey.push(yunmu);
-				}
+				var wordKey = self.getWordKey(word);
 				self.wordMap.add(wordKey, [word, wordKey.length]);
 			}
 		);
@@ -103,11 +122,6 @@ IME.prototype = {
 	},
 	textOnKeyPress: function(e) {
 		key = e.keyCode;
-		// , = 44
-		// . = 46
-		// @ = 64 47 38 43 45 42 40 41 36 33 35 63 59 58 37 34  45 61
-		// ' = 39
-		// s 115, d 100, 
 		if(this.active == false) {
 			return true;
 		}
@@ -122,7 +136,7 @@ IME.prototype = {
 			return false;
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
-			if(key >= 97 && key <= 122 || key == 39 || key == 222 || key >= 65 && key <= 90) {
+			if(key >= 97 && key <= 122 || key == this.spliterKey || key == 222 || key >= 65 && key <= 90) {
 				if(key >= 65 && key <= 90) {
 					// force uppercase to lower case
 					key += 32;
@@ -131,22 +145,27 @@ IME.prototype = {
 				this.inputSize = this.inputPhase.length;
 				this.update();
 			}else {
-                if(key == 64 || key == 46 || key == 32) {
+                if(this.inArray(key, this.selectingKeys) || key == this.spaceKey) {
                     // choose from select list
 					if(this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0){
-						if(key == 32) {
-							key = 49;
+						if(key == this.spaceKey) {
+							// space is the first key
+							this.phaseSelected(0);
+						}else {
+							var startingKeyCode = 49;
+							var tmpSelectingKey = 0;
+							var selectingKeys = this.selectingKeys.clone();
+							for(var i = 0; i < this.selectingWordsPageSize; i ++) {
+								tmpSelectingKey = selectingKeys.shift();
+								if(key == tmpSelectingKey) {
+									key = startingKeyCode + i;
+								}
+							}
+							var digit = key - 48;
+							digit = digit ? digit : 10;
+							digit --;
+							this.phaseSelected(digit);
 						}
-						if(key == 64) {
-							key = 50;
-						}
-						if(key == 46) {
-							key = 51;
-						}
-						var digit = key - 48;
-						digit = digit ? digit : 10;
-						digit --;
-						this.phaseSelected(digit);
 					}else {
 						this.sendResult(String.fromCharCode(key));
 					}
@@ -271,7 +290,24 @@ IME.prototype = {
 		this.text.mojo.setCursorPosition(0, result.length);
 		document.execCommand('copy');
 		this.text.mojo.setCursorPosition(nowPos, nowPos);
-		WordLibrary.addWords([str], 99);
+		var wordKey = this.getWordKey(str);
+		var element = this.wordMap.get(wordKey);
+		if(element == undefined) {
+			this.wordMap.add(wordKey, [str, wordKey.length]);
+		}else {
+			if(element.length > 0) {
+				var notfound = true;
+				for(var i = 0; i < element.length; i ++) {
+					if(str === element[i][0]) {
+						notfound = false;
+						break;
+					}
+				}
+				if(notfound) {
+					this.wordMap.add(wordKey, [str, wordKey.length]);
+				}
+			}
+		}
 	},
 	update: function(){
 		var i = this.getLastSelectedIndex();
