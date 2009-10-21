@@ -15,8 +15,8 @@ WordPadAssistant.prototype.setup = function() {
 	this.panel = {
 		text: $('text'),
 		result: $('result'),
+		select: $('select'),
 		debug: $('debug'),
-		select: $('select')
 	};
 
 	this.ime = new IME(this.panel);
@@ -32,6 +32,7 @@ WordPadAssistant.prototype.setup = function() {
 			},
 			{
 				items:[
+					{label: $L('短信'), command:'imeMessaging'},
 					{label: $L('清空'), command:'imeClean'}
 				]
 			}
