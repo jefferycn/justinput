@@ -17,6 +17,10 @@ IME.prototype = {
 	characterMap: undefined,
 	selectingWordsCurrentPage : [],
 	selectingWordsPageSize: 3,
+	pageDownKey: 44,
+	pageUpKey: 95,
+	spliterKey: 39,
+	spaceKey: 32,
 	inputPhase: "",
 	inputCursorIndex: 0,
 	initialize: function() {
@@ -99,7 +103,6 @@ IME.prototype = {
 	},
 	textOnKeyPress: function(e) {
 		key = e.keyCode;
-		this.debug.update(key);
 		// , = 44
 		// . = 46
 		// @ = 64 47 38 43 45 42 40 41 36 33 35 63 59 58 37 34  45 61
@@ -108,18 +111,15 @@ IME.prototype = {
 		if(this.active == false) {
 			return true;
 		}
-		if(key == 44 && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
+		if(key == this.pageDownKey && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
 			this.selectingWordsPageDown();
 			e.returnValue = false;
 			return false;
 		}
-		if(key == 95 && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
+		if(key == this.pageUpKey && this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0) {
 			this.selectingWordsPageUp();
 			e.returnValue = false;
 			return false;
-		}
-		if(key >= 33 && key <= 38 || key >= 40 && key <= 45 || key == 47 || key == 58 || key == 61 || key == 63) {
-			return String.fromCharCode(key);
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
 			if(key >= 97 && key <= 122 || key == 39 || key == 222 || key >= 65 && key <= 90) {
@@ -131,7 +131,7 @@ IME.prototype = {
 				this.inputSize = this.inputPhase.length;
 				this.update();
 			}else {
-                if(key == 64 || key <= 46 || key == 32) {
+                if(key == 64 || key == 46 || key == 32) {
                     // choose from select list
 					if(this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0){
 						if(key == 32) {
@@ -148,8 +148,11 @@ IME.prototype = {
 						digit --;
 						this.phaseSelected(digit);
 					}else {
-						return String.fromCharCode(key);
+						this.sendResult(String.fromCharCode(key));
 					}
+                }else {
+                	// symbol keys
+                	this.sendResult(String.fromCharCode(key));
                 }
 			}
 			e.returnValue = false;
