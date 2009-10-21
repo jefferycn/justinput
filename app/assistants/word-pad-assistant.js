@@ -20,6 +20,8 @@ WordPadAssistant.prototype.setup = function() {
 	};
 
 	this.ime = new IME(this.panel);
+	this.ime.setSelectingWordsPageSize(5);
+	this.ime.setSelectingKeys([49, 50, 51, 52, 53]);
 	
     this.cmdMenuModel = {
 		items: [
