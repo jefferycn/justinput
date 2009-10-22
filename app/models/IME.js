@@ -136,7 +136,7 @@ IME.prototype = {
 			return false;
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
-			if(key >= 97 && key <= 122 || key == this.spliterKey || key == 222 || key >= 65 && key <= 90) {
+			if(key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 				if(key >= 65 && key <= 90) {
 					// force uppercase to lower case
 					key += 32;
@@ -167,15 +167,15 @@ IME.prototype = {
 							this.phaseSelected(digit);
 						}
 					}else {
-						this.sendResult(String.fromCharCode(key));
+						this.sendResult(String.fromCharCode(key), true);
 					}
                 }else {
                 	// symbol keys
-                	this.sendResult(String.fromCharCode(key));
+                	this.sendResult(String.fromCharCode(key), true);
                 }
 			}
-			e.returnValue = false;
 		}
+		e.returnValue = false;
 		return false;
 	},
 	selectingWordsPageUp: function(){
@@ -259,7 +259,7 @@ IME.prototype = {
 			this.inputCursorIndex = this.inputPhase.length;
 		}
 		if(this.getLastSelectedIndex() >= this.inputPhase.length){
-			this.sendResult(this.selectedWords.join(""));
+			this.sendResult(this.selectedWords.join(""), false);
 			this.inputPhase = "";
 			this.inputCursorIndex = 0;
 			this.selectedWords.length = 0;
@@ -268,7 +268,7 @@ IME.prototype = {
 		}
 		this.update();
 	},
-	sendResult: function(str) {
+	sendResult: function(str, isChar) {
 		// save selected phase to database here
 		// by Jeffery
 		var exist = this.text.mojo.getValue();
@@ -290,6 +290,9 @@ IME.prototype = {
 		this.text.mojo.setCursorPosition(0, result.length);
 		document.execCommand('copy');
 		this.text.mojo.setCursorPosition(nowPos, nowPos);
+		if(isChar) {
+			return true;
+		}
 		var wordKey = this.getWordKey(str);
 		var element = this.wordMap.get(wordKey);
 		if(element == undefined) {
