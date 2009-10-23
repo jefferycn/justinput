@@ -16,11 +16,13 @@ IME.prototype = {
 	characters: undefined,
 	characterMap: undefined,
 	selectingWordsCurrentPage : [],
+	// default value, will be rewrite
 	selectingWordsPageSize: 3,
 	pageDownKey: 44,
 	pageUpKey: 95,
 	spliterKey: 39,
 	spaceKey: 32,
+	// default value, will be rewrite
 	selectingKeys: [32, 64, 46],
 	inputPhase: "",
 	inputCursorIndex: 0,
@@ -102,6 +104,9 @@ IME.prototype = {
 			}
 		);
 		PinyingSource.init();
+		if(Object.isArray(config.words)) {
+			WordLibrary.addWords(config.words, 99);
+		}
 	},
 	textOnKeyDown: function(e) {
 		if(this.active == false) {
@@ -121,6 +126,9 @@ IME.prototype = {
 		}
 	},
 	textOnKeyPress: function(e) {
+		// init this.selectingWordsPageSize
+		this.selectingWordsPageSize = config.wordsPageSize;
+		this.selectingKeys = config.selectingKeys;
 		key = e.keyCode;
 		if(this.active == false) {
 			return true;
@@ -137,6 +145,9 @@ IME.prototype = {
 		}
 		if(Mojo.Char.isValidWrittenChar(key)) {
 			if(key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
+				if(key == this.spliterKey && !(this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0)){
+					return String.fromCharCode(key);
+				}
 				if(key >= 65 && key <= 90) {
 					// force uppercase to lower case
 					key += 32;
@@ -145,27 +156,22 @@ IME.prototype = {
 				this.inputSize = this.inputPhase.length;
 				this.update();
 			}else {
-                if(this.inArray(key, this.selectingKeys) || key == this.spaceKey) {
+                if(this.inArray(key, this.selectingKeys)) {
                     // choose from select list
 					if(this.selectingWordsCurrentPage && this.selectingWordsCurrentPage.length > 0){
-						if(key == this.spaceKey) {
-							// space is the first key
-							this.phaseSelected(0);
-						}else {
-							var startingKeyCode = 49;
-							var tmpSelectingKey = 0;
-							var selectingKeys = this.selectingKeys.clone();
-							for(var i = 0; i < this.selectingWordsPageSize; i ++) {
-								tmpSelectingKey = selectingKeys.shift();
-								if(key == tmpSelectingKey) {
-									key = startingKeyCode + i;
-								}
+						var startingKeyCode = 49;
+						var tmpSelectingKey = 0;
+						var selectingKeys = this.selectingKeys.clone();
+						for(var i = 0; i < this.selectingWordsPageSize; i ++) {
+							tmpSelectingKey = selectingKeys.shift();
+							if(key == tmpSelectingKey) {
+								key = startingKeyCode + i;
 							}
-							var digit = key - 48;
-							digit = digit ? digit : 10;
-							digit --;
-							this.phaseSelected(digit);
 						}
+						var digit = key - 48;
+						digit = digit ? digit : 10;
+						digit --;
+						this.phaseSelected(digit);
 					}else {
 						return String.fromCharCode(key);
 					}
@@ -303,6 +309,7 @@ IME.prototype = {
 				}
 				if(notfound) {
 					this.wordMap.add(wordKey, [str, wordKey.length]);
+					config.words.push(str);
 				}
 			}
 		}

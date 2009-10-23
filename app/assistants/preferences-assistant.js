@@ -1,16 +1,15 @@
-function PreferencesAssistant(arg) {
-	this.db = arg;
-	this.wordsPageSize = 3;
+function PreferencesAssistant(db) {
+	this.db = db;
+	this.wordsPageSize = config.wordsPageSize;
 }
 
 PreferencesAssistant.prototype.setup = function() {
-    this.db.simpleGet('wordsPageSize', this.dbGetWordsPageSizeSuccess, this.dbFailure);
     this.controller.setupWidget("wordsPageSize",
     {
         label: $L("候选词数量"),
         modelProperty: "value",
         min: 3,
-        max: 8    
+        max: 8
     },
     this.wordsPageSizeModel = {
         value : this.wordsPageSize
@@ -20,26 +19,42 @@ PreferencesAssistant.prototype.setup = function() {
     this.controller.listen("wordsPageSize", Mojo.Event.propertyChange, this.changeWordsPageSizeHandler);
     
     for(var i = 0; i < 8; i++) {
-    	this.controller.listen(this.controller.get('selecting_' + i),Mojo.Event.tap, this.setSelecting.curry(i).bind(this));
+    	if(i >= this.wordsPageSize) {
+    		this.controller.get('selecting_' + i).hide();
+    	}
+    	var buttonLabel = '';
+    	if(config.selectingKeys[i] == 32) {
+    		buttonLabel = i + 1 + ': ' + $L("空格");
+    	}else {
+    		buttonLabel = i + 1 + ': ' + String.fromCharCode(config.selectingKeys[i]);
+    	}
+		this.controller.get('selecting_' + i).update(buttonLabel);
+    	this.controller.get('selecting_' + i).observe(Mojo.Event.tap, this.setSelecting.curry(i).bindAsEventListener(this));
     }
 };
 
 PreferencesAssistant.prototype.setSelecting = function(index) {
-	this.db.simpleGet('wordsPageSize', this.dbGetWordsPageSizeSuccess, this.dbFailure);
-	this.controller.showAlertDialog({
-				    title: $L("Prefs Menu"),
-				    message: $L("You have selected the prefs menu: ") + this.wordsPageSize,
-					choices:[
-         				{label:$L('Thanks'), value:"refresh", type:'affirmative'}
-						]
-				    });	
+	this.controller.showDialog({
+		template: 'preferences/keychangedialog-scene',
+		assistant: new KeyChangeDialogAssistant(this, this.callback.bind(this), index),
+		preventCancel: true
+	});
 }
 
-// Deactivate - save News preferences and globals
+PreferencesAssistant.prototype.callback = function(key, index) {
+	var buttonLabel = '';
+	if(key == 32) {
+		buttonLabel = index + 1 + ': ' + $L("空格");
+	}else {
+		buttonLabel = index + 1 + ': ' + String.fromCharCode(key);
+	}
+	this.controller.get('selecting_' + index).update(buttonLabel);
+	this.db.simpleAdd('selectingKeys', config.selectingKeys);
+}
+
 PreferencesAssistant.prototype.deactivate = function() {
 };
 
-// Cleanup - remove listeners
 PreferencesAssistant.prototype.cleanup = function() {
     this.controller.stopListening("wordsPageSize", Mojo.Event.propertyChange, this.changeWordsPageSizeHandler);
     
@@ -48,40 +63,19 @@ PreferencesAssistant.prototype.cleanup = function() {
     }
 };
 
-//    changeFeatureDelay - Handle changes to the feature feed interval
 PreferencesAssistant.prototype.changeWordsPageSize = function(event) {
 	// save data to db
-	this.data = {'wordsPageSize': this.wordsPageSizeModel.value};
-	this.db.simpleAdd('wordsPageSize', this.data, this.dbSuccess, this.dbFailure);
-	this.db.simpleGet('wordsPageSize', this.dbGetWordsPageSizeSuccess, this.dbFailure);
-};
-
-PreferencesAssistant.prototype.dbGetWordsPageSizeSuccess = function(response){
-	var recordSize = Object.values(response).size();
-	if(recordSize == 0) {
-		// no data something here
-	} else {
-		this.wordsPageSize = response.wordsPageSize;
+	config.wordsPageSize = this.wordsPageSizeModel.value;
+	for(var i = this.wordsPageSizeModel.value; i <= 8; i ++) {
+		config.selectingKeys[i] = null;
 	}
-	
-	this.controller.showAlertDialog({
-		title: $L("Error"),
-		message: $L("Database operation failure: ") + this.wordsPageSize,
-		choices:[
-        	{label:$L('Thanks'), value:"refresh", type:'affirmative'}
-		]
-	});
-}
-
-PreferencesAssistant.prototype.dbSuccess = function() {
-}
-
-PreferencesAssistant.prototype.dbFailure = function(transaction, result) {
-	this.controller.showAlertDialog({
-		title: $L("Error"),
-		message: $L("Database operation failure: ") + result.message,
-		choices:[
-        	{label:$L('Thanks'), value:"refresh", type:'affirmative'}
-		]
-	});
-}
+	for(var i = 0; i < 8; i++) {
+    	if(i >= this.wordsPageSizeModel.value) {
+    		this.controller.get('selecting_' + i).hide();
+    		this.controller.get('selecting_' + i).update('');
+    	}else {
+    		this.controller.get('selecting_' + i).show();
+    	}
+	}
+	this.db.simpleAdd('wordsPageSizeSetting', this.wordsPageSizeModel.value);
+};
