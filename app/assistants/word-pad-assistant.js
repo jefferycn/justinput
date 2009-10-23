@@ -3,6 +3,8 @@ function WordPadAssistant() {
 }
 
 WordPadAssistant.prototype.setup = function() {
+	
+	
 	this.controller.setupWidget('text',
          this.attributes = {
              hintText: $L('GPL2 Allrights Received'),
@@ -23,6 +25,16 @@ WordPadAssistant.prototype.setup = function() {
 	//this.ime.setSelectingWordsPageSize(5);
 	//this.ime.setSelectingKeys([49, 50, 51, 52, 53]);
 	
+	this.appMenuModel = {
+		visible: true,
+		items: [
+			Mojo.Menu.editItem,
+			{label: $L('设置'), command: 'prefs'},
+			{label: $L('帮助'), command: 'help'}
+		]
+	};
+	this.controller.setupWidget(Mojo.Menu.appMenu, {omitDefaultItems: true}, this.appMenuModel);
+	
     this.cmdMenuModel = {
 		items: [
 			{
@@ -40,9 +52,18 @@ WordPadAssistant.prototype.setup = function() {
 			}
 		]
 	};
-	
 	this.controller.setupWidget(Mojo.Menu.commandMenu, undefined, this.cmdMenuModel);
+	this.controller.listen("text", Mojo.Event.propertyChange, this.textOnPropertyChange.bindAsEventListener(this));
 }
+
+WordPadAssistant.prototype.textOnPropertyChange = function(e) {
+	var text = this.controller.get('text');
+	var result = text.mojo.getValue();
+	var pos = text.mojo.getCursorPosition();
+	text.mojo.setCursorPosition(0, result.length);
+	document.execCommand('copy');
+	text.mojo.setCursorPosition(pos, pos);
+};
 
 WordPadAssistant.prototype.handleCommand = function(event) {
 	if(event.type == Mojo.Event.command) {
@@ -73,6 +94,10 @@ WordPadAssistant.prototype.handleCommand = function(event) {
          		}
 			});
 		}
+		if(event.command == 'prefs') {
+			//Mojo.controller.stageController.assistant.showScene("preferences/preferences", 'preferences', this.db);
+			Mojo.Controller.stageController.pushScene({'name': 'preferences', sceneTemplate: 'preferences/preferences-scene'}, false);
+		}
 	}
 }
 
@@ -80,68 +105,8 @@ WordPadAssistant.prototype.toggleChange = function() {
 	this.ime.toggleIme();
 }
 
-WordPadAssistant.prototype.activate = function(event) {
-	try {
-		/**
-		this.db = openDatabase('JustInput', '', 'JustInput Data Store', 65536);
-		try {
-			// get database config
-			var string = 'select * from config';
-			this.db.transaction(
-        		(function (transaction) {
-            		transaction.executeSql(string, [], this.queryConfigHandler.bind(this), this.createConfigHandler.bind(this));
-        		}).bind(this)
-    		);
-		}catch(e) {
-			var string = 'CREATE TABLE config (id TEXT NOT NULL DEFAULT "", name TEXT NOT NULL DEFAULT ""); GO;';
-			this.db.transaction(
-	        	(function (transaction) {
-					transaction.executeSql('DROP TABLE IF EXISTS config; GO;', []);
-	            	transaction.executeSql(string, [], this.createTableDataHandler.bind(this), this.errorHandler.bind(this));
-	        	}).bind(this)
-	    	);
-		}
-		**/
-	}catch(e) {
-		$('debug').update(e);
-	}
-}
-
-
 WordPadAssistant.prototype.deactivate = function(event) {
 }
 
 WordPadAssistant.prototype.cleanup = function(event) {
-}
-
-WordPadAssistant.prototype.errorHandler = function(transaction, error) { 
-    console.log('Error was '+error.message+' (Code '+error.code+')'); 
-    return true;
-}
-
-WordPadAssistant.prototype.queryConfigHandler = function(transaction, results) { 
-    var string = "";
-	try {
-		if(results.rows.length > 0) {
-			for (var i = 0; i < results.rows.length; i++) {
-				var row = results.rows.item(i);
-				var name;
-				//string = "";
-				for (name in row) {
-					if (typeof row[name] !== 'function') {
-						string = string + name + ': ' + row[name] + " | ";
-					}
-				}
-			}
-			$('debug').update(string);
-		}else {
-			
-		}
-		//update the list widget
-		//this.resultList.clear();
-		//Object.extend(this.resultList,list);
-		//this.controller.modelChanged(this.listModel, this);
-	}catch (e) {
-		$('result').update(e);	
-	} 
 }
