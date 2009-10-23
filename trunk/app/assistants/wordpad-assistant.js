@@ -1,9 +1,17 @@
-function WordPadAssistant() {
+function WordpadAssistant() {
 	
 }
 
-WordPadAssistant.prototype.setup = function() {
-	
+WordpadAssistant.prototype.setup = function() {
+	var options = {
+		name: "JustInput",
+		version: 1,
+		replace: false
+	};
+	this.db = new Mojo.Depot(options);
+	this.db.simpleGet('wordsPageSizeSetting', this.dbGetWordsPageSizeSuccess);
+	this.db.simpleGet('selectingKeys', this.dbGetSelectingKeysSuccess);
+	this.db.simpleGet('words', this.dbGetWordsSuccess);
 	
 	this.controller.setupWidget('text',
          this.attributes = {
@@ -56,7 +64,7 @@ WordPadAssistant.prototype.setup = function() {
 	this.controller.listen("text", Mojo.Event.propertyChange, this.textOnPropertyChange.bindAsEventListener(this));
 }
 
-WordPadAssistant.prototype.textOnPropertyChange = function(e) {
+WordpadAssistant.prototype.textOnPropertyChange = function(e) {
 	var text = this.controller.get('text');
 	var result = text.mojo.getValue();
 	var pos = text.mojo.getCursorPosition();
@@ -65,7 +73,7 @@ WordPadAssistant.prototype.textOnPropertyChange = function(e) {
 	text.mojo.setCursorPosition(pos, pos);
 };
 
-WordPadAssistant.prototype.handleCommand = function(event) {
+WordpadAssistant.prototype.handleCommand = function(event) {
 	if(event.type == Mojo.Event.command) {
 		if(event.command == 'imeOn' || event.command == 'imeOff') {
 			this.toggleChange();
@@ -95,18 +103,42 @@ WordPadAssistant.prototype.handleCommand = function(event) {
 			});
 		}
 		if(event.command == 'prefs') {
-			//Mojo.controller.stageController.assistant.showScene("preferences/preferences", 'preferences', this.db);
-			Mojo.Controller.stageController.pushScene({'name': 'preferences', sceneTemplate: 'preferences/preferences-scene'}, false);
+			Mojo.Controller.stageController.pushScene({'name': 'preferences', sceneTemplate: 'preferences/preferences-scene'}, this.db);
 		}
 	}
 }
 
-WordPadAssistant.prototype.toggleChange = function() {
+WordpadAssistant.prototype.dbGetWordsPageSizeSuccess = function(response){
+	var wordsPageSize = 3;
+	if(Object.isNumber(response)) {
+		wordsPageSize = response;
+	}
+	config.wordsPageSize = wordsPageSize;
+}
+
+WordpadAssistant.prototype.dbGetSelectingKeysSuccess = function(response){
+	var selectingKeys = [32, 64, 46];
+	if(Object.isArray(response)) {
+		selectingKeys = response;
+	}
+	config.selectingKeys = selectingKeys;
+}
+
+WordpadAssistant.prototype.dbGetWordsSuccess = function(response){
+	var words = [];
+	if(Object.isArray(response)) {
+		words = response;
+	}
+	config.words = words;
+}
+
+WordpadAssistant.prototype.toggleChange = function() {
 	this.ime.toggleIme();
 }
 
-WordPadAssistant.prototype.deactivate = function(event) {
+WordpadAssistant.prototype.deactivate = function(event) {
 }
 
-WordPadAssistant.prototype.cleanup = function(event) {
+WordpadAssistant.prototype.cleanup = function(event) {
+	this.db.simpleAdd('words', config.words);
 }
