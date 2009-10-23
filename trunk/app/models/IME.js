@@ -90,7 +90,7 @@ IME.prototype = {
 			wordKey.push(yunmu);
 		}
 		return wordKey;
-},
+	},
 	loadWordLibrary: function(){
 		this.wordMap = new PrefixMultiMap([1,{},0]);
 		var self = this;
@@ -167,11 +167,11 @@ IME.prototype = {
 							this.phaseSelected(digit);
 						}
 					}else {
-						this.sendResult(String.fromCharCode(key), true);
+						return String.fromCharCode(key);
 					}
                 }else {
                 	// symbol keys
-                	this.sendResult(String.fromCharCode(key), true);
+                	return String.fromCharCode(key);
                 }
 			}
 		}
@@ -259,7 +259,7 @@ IME.prototype = {
 			this.inputCursorIndex = this.inputPhase.length;
 		}
 		if(this.getLastSelectedIndex() >= this.inputPhase.length){
-			this.sendResult(this.selectedWords.join(""), false);
+			this.sendResult(this.selectedWords.join(""));
 			this.inputPhase = "";
 			this.inputCursorIndex = 0;
 			this.selectedWords.length = 0;
@@ -268,7 +268,7 @@ IME.prototype = {
 		}
 		this.update();
 	},
-	sendResult: function(str, isChar) {
+	sendResult: function(str) {
 		// save selected phase to database here
 		// by Jeffery
 		var exist = this.text.mojo.getValue();
@@ -287,12 +287,7 @@ IME.prototype = {
 			var nowPos = result.length;
 		}
 		this.text.mojo.setValue(result);
-		this.text.mojo.setCursorPosition(0, result.length);
-		document.execCommand('copy');
 		this.text.mojo.setCursorPosition(nowPos, nowPos);
-		if(isChar) {
-			return true;
-		}
 		var wordKey = this.getWordKey(str);
 		var element = this.wordMap.get(wordKey);
 		if(element == undefined) {
