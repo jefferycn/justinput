@@ -15,7 +15,7 @@ KeyChangeDialogAssistant.prototype.setup = function(widget) {
 
 KeyChangeDialogAssistant.prototype.save = function(event){
 	var keyCode = event.originalEvent.keyCode;
-	if(keyCode >= 97 && keyCode <= 122 || keyCode == 39 || keyCode >= 65 && keyCode <= 90) {
+	if(keyCode >= 97 && keyCode <= 122 || keyCode == 39 || keyCode == 44 || keyCode == 95 || keyCode >= 65 && keyCode <= 90) {
 		$('message').update('You can not use this key as a slecting key');
 	}else {
 		$('message').update(keyCode);
