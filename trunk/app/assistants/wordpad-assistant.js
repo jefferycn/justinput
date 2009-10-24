@@ -11,14 +11,15 @@ WordpadAssistant.prototype.setup = function() {
 	this.db = new Mojo.Depot(options);
 	this.db.simpleGet('wordsPageSizeSetting', this.dbGetWordsPageSizeSuccess);
 	this.db.simpleGet('selectingKeys', this.dbGetSelectingKeysSuccess);
-	this.db.simpleGet('words', this.dbGetWordsSuccess);
+	//this.db.simpleGet('words', this.dbGetWordsSuccess);
 	
 	this.controller.setupWidget('text',
          this.attributes = {
              hintText: $L('GPL2 Allrights Received'),
              multiline: true,
              focus: true,
-             textCase: Mojo.Widget.steModeLowerCase
+             textCase: Mojo.Widget.steModeLowerCase,
+             changeOnKeyPress: true
          },
          this.model = {}
     );
@@ -30,8 +31,6 @@ WordpadAssistant.prototype.setup = function() {
 	};
 
 	this.ime = new IME(this.panel);
-	//this.ime.setSelectingWordsPageSize(5);
-	//this.ime.setSelectingKeys([49, 50, 51, 52, 53]);
 	
 	this.appMenuModel = {
 		visible: true,
@@ -61,17 +60,7 @@ WordpadAssistant.prototype.setup = function() {
 		]
 	};
 	this.controller.setupWidget(Mojo.Menu.commandMenu, undefined, this.cmdMenuModel);
-	this.controller.listen("text", Mojo.Event.propertyChange, this.textOnPropertyChange.bindAsEventListener(this));
 }
-
-WordpadAssistant.prototype.textOnPropertyChange = function(e) {
-	var text = this.controller.get('text');
-	var result = text.mojo.getValue();
-	var pos = text.mojo.getCursorPosition();
-	text.mojo.setCursorPosition(0, result.length);
-	document.execCommand('copy');
-	text.mojo.setCursorPosition(pos, pos);
-};
 
 WordpadAssistant.prototype.handleCommand = function(event) {
 	if(event.type == Mojo.Event.command) {
@@ -140,5 +129,5 @@ WordpadAssistant.prototype.deactivate = function(event) {
 }
 
 WordpadAssistant.prototype.cleanup = function(event) {
-	this.db.simpleAdd('words', config.words);
+	//this.db.simpleAdd('words', config.words);
 }

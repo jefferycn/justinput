@@ -28,8 +28,10 @@ IME.prototype = {
 	inputCursorIndex: 0,
 	initialize: function() {
 		this.inputSize = this.inputPhase.length;
+		this.text.observe(Mojo.Event.propertyChange, this.textOnPropertyChange.bind(this));
 		this.text.observe('keydown', this.textOnKeyDown.bind(this));
 		this.text.observe('keypress', this.textOnKeyPress.bind(this));
+	//this.controller.listen("text", Mojo.Event.propertyChange, this.textOnPropertyChange.bindAsEventListener(this));
 		this.allPinyin = new PrefixMap(PinyingSource.table);
 		this.characters = {};
 		this.characterMap = new PrefixMultiMap([2,{},0]);
@@ -57,6 +59,14 @@ IME.prototype = {
 		this.selectedWordIndexs = [];
 		this.selectedResult = "";
 		this.inputPinyin = [];
+	},
+	textOnPropertyChange: function(e) {
+		var text = this.text;
+		var result = text.mojo.getValue();
+		var pos = text.mojo.getCursorPosition();
+		text.mojo.setCursorPosition(0, result.length);
+		document.execCommand('copy');
+		text.mojo.setCursorPosition(pos.selectionStart, pos.selectionStart);
 	},
 	setSelectingWordsPageSize: function(v) {
 		this.selectingWordsPageSize = v;
