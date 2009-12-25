@@ -113,10 +113,6 @@ IME.prototype = {
 				self.wordMap.add(wordKey, [word, wordKey.length]);
 			}
 		);
-		PinyingSource.init();
-		if(Object.isArray(config.words)) {
-			WordLibrary.addWords(config.words, 99);
-		}
 	},
 	textOnKeyDown: function(e) {
 		if(this.active == false) {
