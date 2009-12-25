@@ -8,10 +8,11 @@ WordpadAssistant.prototype.setup = function() {
 		version: 1,
 		replace: false
 	};
-	this.db = new Mojo.Depot(options);
-	this.db.simpleGet('wordsPageSizeSetting', this.dbGetWordsPageSizeSuccess);
-	this.db.simpleGet('selectingKeys', this.dbGetSelectingKeysSuccess);
-	//this.db.simpleGet('words', this.dbGetWordsSuccess);
+	Mojo.Log.info("Jeffery -> is here");
+	this.db = new Database(
+		"justinput_words", "1",
+		this.loadDB.bind(this)
+	);
 	
 	this.controller.setupWidget('text',
          this.attributes = {
@@ -60,6 +61,21 @@ WordpadAssistant.prototype.setup = function() {
 		]
 	};
 	this.controller.setupWidget(Mojo.Menu.commandMenu, undefined, this.cmdMenuModel);
+}
+
+WordpadAssistant.prototype.readRet = function(value) {
+	Mojo.Log.info("read data = " + value);
+}
+
+WordpadAssistant.prototype.loadDB = function(isReady) {
+	Mojo.Log.info("loadDB; ready = " + isReady);
+	if (isReady == false) {
+		Mojo.Controller.errorDialog("can not open database");
+		return;
+	}
+	//this.db.write('Jeffery', 'Team Lead', null);
+	this.db.read('Jeffery', this.readRet.bind(this));
+	this.db.read('junjun', this.readRet.bind(this));
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {

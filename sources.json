@@ -18,6 +18,9 @@
     	"source": "app\/models\/IME.js"
 	},
     {
+    	"source": "app\/models\/Database.js"
+	},
+    {
     	"source": "app\/models\/PreFixMap.js"
 	},
     {
