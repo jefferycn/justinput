@@ -90,6 +90,7 @@ IME.prototype = {
 		}
 	},
 	getWordKey: function(word) {
+		Mojo.Log.info("getWordKey ======> " + word);
 		var wordKey = [];
 		for(var i=0;i<word.length;i++){
 			var charPinyinList = this.characters[word.charAt(i)];
@@ -159,7 +160,7 @@ IME.prototype = {
 					key += 32;
 				}
                 this.inputPhase += String.fromCharCode(key)
-				this.inputSize = this.inputPhase.length;
+				this.inputSize = this.inputPhase ? this.inputPhase.length : 0;
 				this.update();
 			}else {
                 if(this.inArray(key, this.selectingKeys)) {
@@ -322,7 +323,9 @@ IME.prototype = {
 	},
 	update: function(){
 		var i = this.getLastSelectedIndex();
+		Mojo.Log.info("update ======> " + i);
 		this.inputPinyin = this.formatPinyin(this.inputPhase.substr(i));
+		Mojo.Log.info("update ======> " + this.inputPinyin);
 		var searchKey = [];
 		for(var i=0;i<this.inputPinyin.length;i++) {
 			searchKey.push(this.inputPinyin[i][0]);
@@ -344,6 +347,7 @@ IME.prototype = {
 			this.selectingWordsCurrentPage = [];
 		else	
 			this.selectingWordsCurrentPage = this.selectingWordsResultSet.getRange(this.selectingWordsResultSet.currentIndex(), this.selectingWordsPageSize);
+		Mojo.Log.info("selectingWordsPaged ======> " + this.selectingWordsCurrentPage);
 		this.refreshSelectingPanel();
 	},
 	refreshResultPanel: function(){

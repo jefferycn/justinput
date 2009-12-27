@@ -26,7 +26,7 @@ function Database(dbname, version, callback) {
 					this.isReady = true;
 					this.callback(this.isReady);
 				} else {
-					this.createTable("data", "name TEXT PRIMARY KEY, value TEXT",
+					this.createTable("temp", "name TEXT PRIMARY KEY",
 						function(created) {
 							//We set the autoVacuum pragma
 							//this.setAutoVacuum(1);
@@ -37,7 +37,7 @@ function Database(dbname, version, callback) {
 				}
 			}.bind(this);
 			//Checking the for the existence of "data"
-			this.tableExists("data", readyOrCreate);
+			this.tableExists("words", readyOrCreate);
 		}.bind(this);
 		//Setting the auto-vacuum pragma
 		this.setAutoVacuum(1, setAutoVac);
@@ -139,7 +139,7 @@ Database.prototype.read = function(name, callback) {
 		}
 		callback(ret);
 	}.bind(this, callback);
-	this.select("data", "value", "name", name, fetchVal);
+	this.select("words", "value", "key", name, fetchVal);
 }
 
 Database.prototype.write = function(name, value, callback) {
