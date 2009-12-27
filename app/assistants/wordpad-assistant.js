@@ -10,7 +10,7 @@ WordpadAssistant.prototype.setup = function() {
 	};
 	Mojo.Log.info("Jeffery -> is here");
 	this.db = new Database(
-		"justinput_words", "1",
+		"ext:JustInput", "1",
 		this.loadDB.bind(this)
 	);
 	
@@ -65,6 +65,7 @@ WordpadAssistant.prototype.setup = function() {
 
 WordpadAssistant.prototype.readRet = function(value) {
 	Mojo.Log.info("read data = " + value);
+	$('debug').update(value.join(","));
 }
 
 WordpadAssistant.prototype.loadDB = function(isReady) {
@@ -74,8 +75,9 @@ WordpadAssistant.prototype.loadDB = function(isReady) {
 		return;
 	}
 	//this.db.write('Jeffery', 'Team Lead', null);
-	this.db.read('Jeffery', this.readRet.bind(this));
-	this.db.read('junjun', this.readRet.bind(this));
+	//this.db.write('junjun', 'Laopo', null);
+	this.db.read('wo', this.readRet.bind(this));
+	//this.db.read('nai', this.readRet.bind(this));
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {
