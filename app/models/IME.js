@@ -26,39 +26,20 @@ IME.prototype = {
 	selectingKeys: [32, 64, 46],
 	inputPhase: "",
 	inputCursorIndex: 0,
+	searchedCandidate: [],
 	initialize: function() {
 		this.inputSize = this.inputPhase.length;
-		this.text.observe(Mojo.Event.propertyChange, this.textOnPropertyChange.bind(this));
-		this.text.observe('keydown', this.textOnKeyDown.bind(this));
-		this.text.observe('keypress', this.textOnKeyPress.bind(this));
-	//this.controller.listen("text", Mojo.Event.propertyChange, this.textOnPropertyChange.bindAsEventListener(this));
-		this.allPinyin = new PrefixMap(PinyingSource.table);
-		this.characters = {};
-		this.characterMap = new PrefixMultiMap([2,{},0]);
-		
-		var characters = PinyingSource.map;
-		for(var py in characters){
-			var chars = characters[py];
-			var shengmu = this.getShengmu(py);
-			var yunmu = py.substr(shengmu.length);
-			for(var i = 0; i<chars.length; i++){
-				var c = chars.charAt(i);
-				this.characterMap.add([shengmu, yunmu], [c, 2]);
-				var list = this.characters[c];
-				if(!list){
-					this.characters[c] = [py];
-					continue;
-				}
-				list.push(py);
-			}
-		}
-		
-		this.loadWordLibrary();
-		
+		//this.allPinyin = new PrefixMap(PinyingSource.table);
 		this.selectedWords = [];
 		this.selectedWordIndexs = [];
 		this.selectedResult = "";
 		this.inputPinyin = [];
+		this.text.observe(Mojo.Event.propertyChange, this.textOnPropertyChange.bind(this));
+		// strange, can not use Mojo.Event.keydown
+		this.text.observe('keydown', this.textOnKeyDown.bind(this));
+		this.text.observe('keypress', this.textOnKeyPress.bind(this));
+		
+		this.searchedCandidate = [];
 	},
 	textOnPropertyChange: function(e) {
 		var text = this.text;
@@ -75,6 +56,9 @@ IME.prototype = {
 		this.selectingKeys = v;
 	},
 	inArray: function(v, array) {
+		if(Object.isArray(array) == false) {
+			return false;
+		}
 		for(var i = 0; i < array.length; i ++) {
 			if(v == array[i]) {
 				return true;
@@ -88,32 +72,6 @@ IME.prototype = {
 		}else {
 			this.active = true;
 		}
-	},
-	getWordKey: function(word) {
-		Mojo.Log.info("getWordKey ======> " + word);
-		var wordKey = [];
-		for(var i=0;i<word.length;i++){
-			var charPinyinList = this.characters[word.charAt(i)];
-			if(!charPinyinList)
-				return ;
-			var charPinyin = charPinyinList[0];
-			var shengmu = this.getShengmu(charPinyin);
-			var yunmu = charPinyin.substr(shengmu.length);
-			wordKey.push(shengmu);
-			wordKey.push(yunmu);
-		}
-		return wordKey;
-	},
-	loadWordLibrary: function(){
-		this.wordMap = new PrefixMultiMap([1,{},0]);
-		var self = this;
-		WordLibrary.loadWords(
-			// use database to get the words
-			function(word, count){
-				var wordKey = self.getWordKey(word);
-				self.wordMap.add(wordKey, [word, wordKey.length]);
-			}
-		);
 	},
 	textOnKeyDown: function(e) {
 		if(this.active == false) {
@@ -191,6 +149,47 @@ IME.prototype = {
 		e.returnValue = false;
 		return false;
 	},
+	getPyCandidate: function(search, pyTable) {
+                        var current = search.splice(0, 1);
+                        if(pyTable[1][current] === undefined) {
+                            // not a valid start
+                            search.unshift(current);
+                            return search.join('');
+                        }else {
+                            if(pyTable[1][current][2] === 0 || search.size() === 0) {
+                                if(pyTable[1][current][0]) {
+                                    this.searchedCandidate.push(pyTable[1][current][0]);
+                                }
+                                if(pyTable[1][current][2] === 0) {
+                                    // the end of the this node
+                                    return this.getPyCandidate(search, PinyingSource.table);
+                                }else {
+                                    // the end of the search string, find all sons
+                                    this.getAllPyChildCandidate(pyTable[1][current]);
+                                    return '';
+                                }
+                            }else {
+                                var notMatch = this.getPyCandidate(search, pyTable[1][current]);
+                                if(notMatch && (current == 'a' || current == 'e' || current == 'o')) {
+                                    this.searchedCandidate.push(current);
+                                    return this.getPyCandidate(search, PinyingSource.table);
+                                }else {
+                                    return notMatch;
+                                }
+                            }
+                        }
+                },
+getAllPyChildCandidate: function(pyTable) {
+                            var json = pyTable[1];
+                            for(var i in json) {
+                                if(json[i][0]) {
+                                    this.searchedCandidate.push(json[i][0]);
+                                }
+                                if(json[i][2] > 0) {
+                                    this.getAllPyChildCandidate(json[i]);
+                                }
+                            }
+                        },
 	selectingWordsPageUp: function(){
 		if(!this.selectingWordsResultSet)
 			return ;
@@ -230,11 +229,13 @@ IME.prototype = {
 			pinyin = pinyin.join("'");
 		}
 		var pinyins = [];
+		this.searchedCandidate = [];
 		for(var i=0;i<pinyin.length;i++){
 			var c =pinyin.charAt(i);
 			if(c=="'")
 				continue;
-			var t = this.allPinyin.search(pinyin.substr(i), true);
+			var t = this.getPyCandidate(pinyin.substr(i).toArray(), PinyingSource.table);
+			Mojo.Log.info("formatPinyin: ==> " + this.searchedCandidate);
 			if(t && t.length > 0){
 				var r = t[0];
 				pinyins.push([r, i+r.length]);
@@ -265,19 +266,11 @@ IME.prototype = {
 		var pinyinIndex = this.selectingWordsCurrentPage[index][1] - 1;
 		while(this.inputPinyin[pinyinIndex] == undefined)
 			pinyinIndex --;
-		var index = this.inputPinyin[pinyinIndex][1] + this.getLastSelectedIndex();
+		var index = this.inputPinyin[pinyinIndex][1];
 		this.selectedWords.push(word);
 		this.selectedWordIndexs.push(index);
 		if(this.inputCursorIndex != this.inputPhase.length){
 			this.inputCursorIndex = this.inputPhase.length;
-		}
-		if(this.getLastSelectedIndex() >= this.inputPhase.length){
-			this.sendResult(this.selectedWords.join(""));
-			this.inputPhase = "";
-			this.inputCursorIndex = 0;
-			this.selectedWords.length = 0;
-			this.selectedWordIndexs.length = 0;
-			this.inputSize = 0;
 		}
 		this.update();
 	},
@@ -301,10 +294,12 @@ IME.prototype = {
 		}
 		this.text.mojo.setValue(result);
 		this.text.mojo.setCursorPosition(nowPos, nowPos);
+		// check this from sqlite
+		/**
 		var wordKey = this.getWordKey(str);
 		var element = this.wordMap.get(wordKey);
 		if(element == undefined) {
-			this.wordMap.add(wordKey, [str, wordKey.length]);
+			// 
 		}else {
 			if(element.length > 0) {
 				var notfound = true;
@@ -320,16 +315,16 @@ IME.prototype = {
 				}
 			}
 		}
+		* **/
 	},
 	update: function(){
-		var i = this.getLastSelectedIndex();
-		Mojo.Log.info("update ======> " + i);
-		this.inputPinyin = this.formatPinyin(this.inputPhase.substr(i));
-		Mojo.Log.info("update ======> " + this.inputPinyin);
+		this.inputPinyin = this.formatPinyin(this.inputPhase);
+		Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
 		var searchKey = [];
 		for(var i=0;i<this.inputPinyin.length;i++) {
 			searchKey.push(this.inputPinyin[i][0]);
 		}
+		/**
 		if(searchKey.length > 0){
 			if(searchKey.length > 2){
 				this.selectingWordsResultSet = this.wordMap.search(searchKey, true, 512);
@@ -339,6 +334,7 @@ IME.prototype = {
 		}else{
 			this.selectingWordsResultSet = null;
 		}
+		**/
 		this.selectingWordsPaged();
 		this.refreshResultPanel();
 	},
@@ -347,17 +343,10 @@ IME.prototype = {
 			this.selectingWordsCurrentPage = [];
 		else	
 			this.selectingWordsCurrentPage = this.selectingWordsResultSet.getRange(this.selectingWordsResultSet.currentIndex(), this.selectingWordsPageSize);
-		Mojo.Log.info("selectingWordsPaged ======> " + this.selectingWordsCurrentPage);
 		this.refreshSelectingPanel();
 	},
 	refreshResultPanel: function(){
-		this.result.update(this.selectedWords.join("") + this.inputPhase.substr(this.getLastSelectedIndex()));
-	},
-	getLastSelectedIndex: function(){
-		if(this.selectedWordIndexs && this.selectedWordIndexs.length > 0) {
-			return this.selectedWordIndexs[this.selectedWordIndexs.length - 1];
-		}
-		return 0;
+		this.result.update(this.selectedWords.join("") + this.inputPhase);
 	},
 	refreshSelectingPanel: function(){
 		var words = [];

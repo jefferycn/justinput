@@ -26,7 +26,7 @@ function Database(dbname, version, callback) {
 					this.isReady = true;
 					this.callback(this.isReady);
 				} else {
-					this.createTable("temp", "name TEXT PRIMARY KEY",
+					this.createTable("words", '"id" INTEGER PRIMARY KEY  NOT NULL ,"value" VARCHAR(512) NOT NULL ,"key" VARCHAR(8) NOT NULL ,"key1" VARCHAR(8),"key2" VARCHAR(8),"key3" VARCHAR(8),"key4" VARCHAR(8),"key5" VARCHAR(64),"rank" INTEGER NOT NULL  DEFAULT 0',
 						function(created) {
 							//We set the autoVacuum pragma
 							//this.setAutoVacuum(1);
