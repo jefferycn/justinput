@@ -1,16 +1,19 @@
-var IME = function(panel) {
+var IME = function(panel, db) {
 	this.text = panel.text;
 	this.result = panel.result;
 	this.select = panel.select;
 	this.debug = panel.debug;
+	this.db = db;
 	this.initialize();
 }
 IME.prototype = {
+	db : false,
 	active : true,
 	text : undefined,
 	input : undefined,
 	result : undefined,
 	select : undefined,
+	limit : 5,
 	inputSize : 0,
 	allPinyin : undefined,
 	characters : undefined,
@@ -26,7 +29,7 @@ IME.prototype = {
 	selectingKeys : [32, 64, 46],
 	inputPhase : "",
 	inputCursorIndex : 0,
-	searchedCandidate : [],
+	hasCandidate: false,
 	initialize : function() {
 		this.inputSize = this.inputPhase.length;
 		// this.allPinyin = new PrefixMap(PinyingSource.table);
@@ -41,7 +44,6 @@ IME.prototype = {
 		this.text.observe('keypress', this.textOnKeyPress.bind(this));
 
 		this.allPinyin = new PrefixMap(PinyingSource.table);
-		this.searchedCandidate = [];
 	},
 	textOnPropertyChange : function(e) {
 		var text = this.text;
@@ -194,6 +196,9 @@ IME.prototype = {
 		return str;
 	},
 	formatPinyin : function(pinyin) {
+		if(Object.isArray(pinyin)) {
+			return pinyin;
+		}
 		var pinyins = [];
 		var phases = pinyin.split("'");
 		for (var i = 0; i < phases.length; i++) {
@@ -201,6 +206,9 @@ IME.prototype = {
 			if (phase.length > 0) {
 				do {
 					var ret = this.allPinyin.search(phase, true);
+					if(Object.isString(ret[0]) === false) {
+						return [phase];
+					}
 					var searched = ret[0];
 					var shift = phase.slice(0, searched.length);
 					phase = phase.slice(searched.length);
@@ -260,8 +268,20 @@ IME.prototype = {
 	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin(this.inputPhase);
-		// Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
-		var searchKey = [];
+		Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
+		var ready = [];
+		var first = [];
+		var rest = this.inputPinyin;
+		var candidates = [];
+		if(rest.length > 6) {
+			first = rest.splice(0, 6);
+		}else {
+			first = rest;
+			rest = [];
+		}
+		// use first to get the candidates
+		var offset = 0;
+		this.db.readCandidates(first, this.limit, offset, this.getCandidates.bind(this));
 		/**
 		 * if(searchKey.length > 0){ if(searchKey.length > 2){
 		 * this.selectingWordsResultSet = this.wordMap.search(searchKey, true,
@@ -271,8 +291,16 @@ IME.prototype = {
 		 * this.characterMap.search(searchKey, true, 512); }else{
 		 * this.selectingWordsResultSet = null; }
 		 */
-		this.selectingWordsPaged();
-		this.refreshResultPanel();
+//		this.selectingWordsPaged();
+//		this.refreshResultPanel();
+	},
+	getCandidates : function(value) {
+		if(value) {
+			$('debug').update(value.join(","));
+		}else {
+			$('debug').update("");
+		}
+		Mojo.Log.info("candidates ======> " + value.join(","));
 	},
 	selectingWordsPaged : function() {
 		if (!this.selectingWordsResultSet)

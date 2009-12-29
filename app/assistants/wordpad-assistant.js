@@ -8,7 +8,12 @@ WordpadAssistant.prototype.setup = function() {
 		version: 1,
 		replace: false
 	};
-	Mojo.Log.info("Jeffery -> is here");
+	this.panel = {
+		text: $('text'),
+		result: $('result'),
+		select: $('select'),
+		debug: $('debug')
+	};
 	this.db = new Database(
 		"ext:JustInput", "1",
 		this.loadDB.bind(this)
@@ -24,15 +29,7 @@ WordpadAssistant.prototype.setup = function() {
          },
          this.model = {}
     );
-	this.panel = {
-		text: $('text'),
-		result: $('result'),
-		select: $('select'),
-		debug: $('debug'),
-	};
 
-	this.ime = new IME(this.panel);
-	
 	this.appMenuModel = {
 		visible: true,
 		items: [
@@ -74,10 +71,9 @@ WordpadAssistant.prototype.loadDB = function(isReady) {
 		Mojo.Controller.errorDialog("can not open database");
 		return;
 	}
-	//this.db.write('Jeffery', 'Team Lead', null);
-	//this.db.write('junjun', 'Laopo', null);
-	this.db.read('wo', this.readRet.bind(this));
-	//this.db.read('nai', this.readRet.bind(this));
+	
+	// initial ime
+	this.ime = new IME(this.panel, this.db);
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {
