@@ -207,7 +207,8 @@ IME.prototype = {
 				do {
 					var ret = this.allPinyin.search(phase, true);
 					if(Object.isString(ret[0]) === false) {
-						return [phase];
+						pinyins.push(phase);
+						return pinyins;
 					}
 					var searched = ret[0];
 					var shift = phase.slice(0, searched.length);
