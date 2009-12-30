@@ -126,6 +126,40 @@ Database.prototype.select = function(table, retCol, matchCol, matchVal,
 			}.bind(this, table, retCol, matchCol, matchVal, callback));
 }
 
+Database.prototype.buildSQL = function(keys, table, retCol) {
+	var arr = [];
+	var sql = "SELECT " + retCol + " FROM " + table + " WHERE ";
+	for (var i = 0; i < keys.length; i++) {
+		var key = keys[i];
+		if (i === 0) {
+			var matchCol = "key";
+			sql += " ( " + matchCol + " >= ? and " + matchCol + " < ? ) ";
+			arr.push(key);
+			arr.push(key.substr(0, key.length - 1)
+					+ String.fromCharCode(key.substr(key.length - 1)
+							.charCodeAt(0)
+							+ 1));
+		} else {
+			var matchCol = "key" + i;
+			sql += " and ( " + matchCol + " >= ? and " + matchCol + " < ? ) ";
+			arr.push(key);
+			arr.push(key.substr(0, key.length - 1)
+					+ String.fromCharCode(key.substr(key.length - 1)
+							.charCodeAt(0)
+							+ 1));
+		}
+	}
+
+	if (0 < keys.length < 5) {
+		sql += " and key" + keys.length + " is null ";
+	}
+
+	return {
+		"sql" : sql,
+		"arr" : arr
+	};
+}
+
 Database.prototype.readCandidates = function(keys, limit, offset, callback) {
 	if (!callback)
 		callback = function() {
@@ -151,61 +185,45 @@ Database.prototype.readCandidates = function(keys, limit, offset, callback) {
 	var table = "words";
 	var retCol = "value";
 	this.db.transaction(function(table, retCol, keys, limit, offset, fetchVal,
-			tx) {
-		var sql = "SELECT " + retCol + " FROM " + table + " WHERE ";
-		var arr = [];
-		for (var i = 0; i < keys.length; i++) {
-			if (keys[i].length === 1
-					&& (keys[i] === 'a' || keys[i] === 'e' || keys[i] === 'o')) {
-				if (i === 0) {
-					var matchCol = "key";
-					sql += " ( " + matchCol + " >= ? and " + matchCol
-							+ " < ? ) ";
-					arr.push(keys[i]);
-					arr.push(String.fromCharCode(keys[i].charCodeAt(0) + 1));
+					tx) {
+				if (keys.length > 0) {
+					var sql = "SELECT " + retCol + " FROM ( ";
+					var arr = [];
+					var keyLength = keys.length;
+					var i = 0;
+					do {
+						var re = this.buildSQL(keys, table, retCol);
+						arr.push(re.arr);
+						if (i === 0 && keyLength > 1) {
+							sql += re.sql + " union all ";
+						} else {
+							sql += re.sql;
+						}
+						keys.pop();
+						keyLength--;
+					} while (keyLength > 0);
+
+					sql += " ) limit " + limit + " offset " + offset;
 				} else {
-					var matchCol = "key" + i;
-					sql += " and ( " + matchCol + " >= ? and " + matchCol
-							+ " < ? ) ";
-					arr.push(keys[i]);
-					arr.push(String.fromCharCode(keys[i].charCodeAt(0) + 1));
+					var sql = "";
+					var arr = [];
 				}
-			} else {
-				if (keys[i].length === 1) {
-					if (i === 0) {
-						var matchCol = "key";
-						sql += " ( " + matchCol + " > ? and " + matchCol
-								+ " < ? ) ";
-						arr.push(keys[i]);
-						arr.push(String.fromCharCode(keys[i].charCodeAt(0) + 1));
-					} else {
-						var matchCol = "key" + i;
-						sql += " and ( " + matchCol + " > ? and " + matchCol
-								+ " < ? ) ";
-						arr.push(keys[i]);
-						arr.push(String.fromCharCode(keys[i].charCodeAt(0) + 1));
-					}
-				} else {
-					var matchCol = (i === 0) ? "key " : " and key" + i;
-					sql += matchCol + " = ?";
-					arr.push(keys[i]);
-				}
-			}
-		}
-		sql += " limit " + limit + " offset " + offset + ";";
-		tx.executeSql(sql, arr, function(fetchVal, tx, SQLResultSet) { // onSuccess
-					if (SQLResultSet == null || SQLResultSet.rows.length <= 0) {
-						// Mojo.Log.info("Select returned nothing.");
-						fetchVal(null);
-					} else {
-						// Mojo.Log.info("Select returned something.");
-						fetchVal(SQLResultSet);
-					}
-				}.bind(this, fetchVal), function(fetchVal, tx, error) { // onFailure
-					// Mojo.Log.info("Select failed");
-					fetchVal(null);
-				}.bind(this, fetchVal))
-	}.bind(this, table, retCol, keys, limit, offset, fetchVal));
+				Mojo.Log.info("Sql ==> " + sql);
+				Mojo.Log.info("arr ==> " + arr);
+				tx.executeSql(sql, arr, function(fetchVal, tx, SQLResultSet) {
+							if (SQLResultSet == null
+									|| SQLResultSet.rows.length <= 0) {
+								Mojo.Log.info("Select returned nothing.");
+								fetchVal(null);
+							} else {
+								Mojo.Log.info("Select returned something.");
+								fetchVal(SQLResultSet);
+							}
+						}.bind(this, fetchVal), function(fetchVal, tx, error) {
+							// Mojo.Log.info("Select failed");
+							fetchVal(null);
+						}.bind(this, fetchVal))
+			}.bind(this, table, retCol, keys, limit, offset, fetchVal));
 }
 
 /**
