@@ -156,7 +156,7 @@ Database.prototype.buildSQL = function(keys, table, retCol) {
 
 	return {
 		"sql" : sql,
-		"arr" : arr
+		"keys" : arr
 	};
 }
 
@@ -193,7 +193,7 @@ Database.prototype.readCandidates = function(keys, limit, offset, callback) {
 					var i = 0;
 					do {
 						var re = this.buildSQL(keys, table, retCol);
-						arr.push(re.arr);
+						arr.push(re.keys);
 						if (i === 0 && keyLength > 1) {
 							sql += re.sql + " union all ";
 						} else {
@@ -203,24 +203,26 @@ Database.prototype.readCandidates = function(keys, limit, offset, callback) {
 						keyLength--;
 					} while (keyLength > 0);
 
-					sql += " ) limit " + limit + " offset " + offset;
+					sql += " ) limit " + limit + " offset " + offset + ";";
 				} else {
 					var sql = "";
 					var arr = [];
 				}
-				Mojo.Log.info("Sql ==> " + sql);
-				Mojo.Log.info("arr ==> " + arr);
+				arr = arr.flatten();
+				// Mojo.Log.info("Sql ==> " + sql);
+				// Mojo.Log.info("arr ==> " + arr);
+				// Mojo.Log.info("arr.length ==> " + arr.length);
 				tx.executeSql(sql, arr, function(fetchVal, tx, SQLResultSet) {
 							if (SQLResultSet == null
 									|| SQLResultSet.rows.length <= 0) {
-								Mojo.Log.info("Select returned nothing.");
+								// Mojo.Log.info("Select returned nothing.");
 								fetchVal(null);
 							} else {
-								Mojo.Log.info("Select returned something.");
+								// Mojo.Log.info("Select returned something.");
 								fetchVal(SQLResultSet);
 							}
 						}.bind(this, fetchVal), function(fetchVal, tx, error) {
-							// Mojo.Log.info("Select failed");
+							Mojo.Log.info("Select failed ==> " + error.message);
 							fetchVal(null);
 						}.bind(this, fetchVal))
 			}.bind(this, table, retCol, keys, limit, offset, fetchVal));
