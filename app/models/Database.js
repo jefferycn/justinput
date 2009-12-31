@@ -149,8 +149,8 @@ Database.prototype.buildSQL = function(keys, table, retCol) {
 							+ 1));
 		}
 	}
-
-	if (0 < keys.length < 5) {
+	// Mojo.Log.info("keys ======> " + keys.length);
+	if (0 < keys.length && keys.length < 6) {
 		sql += " and key" + keys.length + " is null ";
 	}
 
