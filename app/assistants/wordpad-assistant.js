@@ -62,7 +62,7 @@ WordpadAssistant.prototype.setup = function() {
 
 WordpadAssistant.prototype.readRet = function(value) {
 	Mojo.Log.info("read data = " + value);
-	$('debug').update(value.join(","));
+	// $('debug').update(value.join(","));
 }
 
 WordpadAssistant.prototype.loadDB = function(isReady) {
@@ -111,30 +111,6 @@ WordpadAssistant.prototype.handleCommand = function(event) {
 	}
 }
 
-WordpadAssistant.prototype.dbGetWordsPageSizeSuccess = function(response){
-	var wordsPageSize = 3;
-	if(Object.isNumber(response)) {
-		wordsPageSize = response;
-	}
-	config.wordsPageSize = wordsPageSize;
-}
-
-WordpadAssistant.prototype.dbGetSelectingKeysSuccess = function(response){
-	var selectingKeys = [32, 64, 46];
-	if(Object.isArray(response)) {
-		selectingKeys = response;
-	}
-	config.selectingKeys = selectingKeys;
-}
-
-WordpadAssistant.prototype.dbGetWordsSuccess = function(response){
-	var words = [];
-	if(Object.isArray(response)) {
-		words = response;
-	}
-	config.words = words;
-}
-
 WordpadAssistant.prototype.toggleChange = function() {
 	this.ime.toggleIme();
 }
@@ -143,5 +119,4 @@ WordpadAssistant.prototype.deactivate = function(event) {
 }
 
 WordpadAssistant.prototype.cleanup = function(event) {
-	//this.db.simpleAdd('words', config.words);
 }

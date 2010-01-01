@@ -29,6 +29,7 @@ IME.prototype = {
 	selected : [],
 	hasCandidate : false,
 	offset : 0,
+	activeCandidateIndex : 2,
 	initialize : function() {
 		this.inputPinyin = [];
 		this.text.observe(Mojo.Event.propertyChange, this.textOnPropertyChange
@@ -69,9 +70,10 @@ IME.prototype = {
 			return true;
 		}
 		if (Mojo.Char.isDeleteKey(e.keyCode)) {
-			if (this.hasCandidate) {
+			if (this.inputPhase.length > 0) {
 				// clean the pagination offset
 				this.offset = 0;
+				this.activeCandidateIndex = 2;
 				if (this.selectedPinyin.length > 0) {
 					// pop one and unshift it to this.inputPhase
 					this.inputPinyin = this.formatPinyin(this.inputPhase);
@@ -99,7 +101,7 @@ IME.prototype = {
 		if (this.active == false) {
 			return true;
 		}
-		Mojo.Log.info("textOnKeyPress ======> " + key);
+		// Mojo.Log.info("textOnKeyPress ======> " + key);
 		if (key == this.pageDownKey && this.hasCandidate) {
 			this.pageDown();
 			e.returnValue = false;
@@ -128,22 +130,38 @@ IME.prototype = {
 				// this.selectingKeys);
 				if (this.inArray(key, this.selectingKeys)) {
 					// choose from select list
-					if (this.hasCandidate) {
-						var startingKeyCode = 49;
-						var tmpSelectingKey = 0;
-						var selectingKeys = this.selectingKeys.clone();
-						for (var i = 0; i < this.candidates.length; i++) {
-							tmpSelectingKey = selectingKeys.shift();
-							if (key == tmpSelectingKey) {
-								key = startingKeyCode + i;
+					if (this.inputPhase.length > 0) {
+						if (this.hasCandidate) {
+							Mojo.Log.info("textOnKeyPress ==> " + this.candidates);
+							Mojo.Log.info("textOnKeyPress ==> " + this.activeCandidateIndex);
+							if (key === this.selectingKeys[0]) {
+								var seqMap = [3, 1, 0, 2, 4];
+								this.phaseSelected(seqMap[this.activeCandidateIndex]);
+							} else {
+								if (key === this.selectingKeys[1]) {
+									// . is pressed
+									if (this.activeCandidateIndex > 0) {
+										this.activeCandidateIndex--;
+									}
+								}
+								if (key === this.selectingKeys[2]) {
+									// @ is pressed
+									if (this.activeCandidateIndex < 4) {
+										this.activeCandidateIndex++;
+									}
+								}
 							}
+							this.update();
+						} else {
+							// there is no cadidates, but the inputPhase is not
+							// empty, just push it out
+							this.sendResult(this.inputPhase.substring(1,
+									this.inputPhase.length));
+							this.inputPhase = '';
+							this.offset = 0;
+							this.activeCandidateIndex = 2;
+							this.update();
 						}
-						var digit = key - 48;
-						digit = digit ? digit : 10;
-						digit--;
-						// Mojo.Log.info("selecting ======> " + key + " digit
-						// ==> " + digit);
-						this.phaseSelected(digit);
 					} else {
 						return String.fromCharCode(key);
 					}
@@ -201,7 +219,8 @@ IME.prototype = {
 		this.inputPhase = this.inputPinyin.join('');
 		// clean the pagination offset
 		this.offset = 0;
-		//Mojo.Log.info("phaseSelected inputPhase ======> " + this.inputPhase);
+		this.activeCandidateIndex = 2;
+		// Mojo.Log.info("phaseSelected inputPhase ======> " + this.inputPhase);
 		this.update();
 	},
 	sendResult : function(str) {
@@ -232,11 +251,9 @@ IME.prototype = {
 	update : function() {
 		this.inputPinyin = this.formatPinyin(this.inputPhase);
 		this.updateResultPanel();
-		Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
-		var ready = [];
+		// Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
 		var first = [];
 		var rest = this.inputPinyin;
-		var candidates = [];
 		if (rest.length > 6) {
 			first = rest.splice(0, 6);
 		} else {
@@ -261,15 +278,38 @@ IME.prototype = {
 				this.sendResult(this.selected.join(''));
 				this.selected = [];
 				this.offset = 0;
+				this.activeCandidateIndex = 2;
 			}
 		}
 		this.updateSelectingPanel();
 	},
+	sortArray : function() {
+		var candidates = [];
+		candidates[2] = this.candidates[0];
+		if (this.candidates[1]) {
+			candidates[1] = this.candidates[1];
+		}
+		if (this.candidates[2]) {
+			candidates[3] = this.candidates[2];
+		}
+		if (this.candidates[3]) {
+			candidates[0] = this.candidates[3];
+		}
+		if (this.candidates[4]) {
+			candidates[4] = this.candidates[4];
+		}
+		return candidates;
+	},
 	updateSelectingPanel : function() {
 		if (this.hasCandidate) {
+			var candidates = this.sortArray();
 			var html = '';
-			for (var i = 0; i < this.candidates.length; i++) {
-				html += ((i + 1) % 10) + '.' + this.candidates[i] + ' ';
+			for (var i = 0; i < candidates.length; i++) {
+				var index = ((i + 1) % 10) + '.';
+				if (i === this.activeCandidateIndex) {
+					index = '*';
+				}
+				html += index + candidates[i] + ' ';
 			}
 			this.select.update(html);
 		} else {
