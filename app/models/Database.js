@@ -222,7 +222,7 @@ Database.prototype.readCandidates = function(keys, limit, offset, callback) {
 								fetchVal(SQLResultSet);
 							}
 						}.bind(this, fetchVal), function(fetchVal, tx, error) {
-							Mojo.Log.info("Select failed ==> " + error.message);
+							// Mojo.Log.info("Select failed ==> " + error.message);
 							fetchVal(null);
 						}.bind(this, fetchVal))
 			}.bind(this, table, retCol, keys, limit, offset, fetchVal));
@@ -367,8 +367,8 @@ Database.prototype.executeBooleanSQL = function(sql, callback) {
 		tx.executeSql(sql, [], function(callback, tx, SQLResultSet) { // onSuccess
 					callback(true);
 				}.bind(this, callback), function(callback, tx, error) { // onFailure
-					Mojo.Log.warn("SQL Error: Code " + error.code);
-					Mojo.Log.warn("SQL Error: Message: " + error.message);
+					// Mojo.Log.warn("SQL Error: Code " + error.code);
+					// Mojo.Log.warn("SQL Error: Message: " + error.message);
 					callback(false);
 				}.bind(this, callback));
 			// Mojo.Log.info("Query sent");
