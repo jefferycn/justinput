@@ -4,7 +4,6 @@ function WordpadAssistant() {
 
 WordpadAssistant.prototype.setup = function() {
 	this.controller.setupWidget('text', this.attributes = {
-				hintText : $L('GPL2 Allrights Received'),
 				multiline : true,
 				focus : true,
 				textCase : Mojo.Widget.steModeLowerCase,
@@ -12,15 +11,13 @@ WordpadAssistant.prototype.setup = function() {
 			}, this.model = {});
 
 	this.timePress = 0;
-	document.observe('keypress', this.turnOn.bind(this));
+	//document.observe('keypress', this.turnOn.bind(this));
+	this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
 
 	this.appMenuModel = {
 		visible : true,
 		items : [Mojo.Menu.editItem, {
-					label : $L('设置'),
-					command : 'prefs'
-				}, {
-					label : $L('帮助'),
+					label : $L('Help'),
 					command : 'help'
 				}]
 	};
@@ -58,23 +55,26 @@ WordpadAssistant.prototype.turnOn = function(event) {
 			this.timePress++;
 			setTimeout('this.timePress = 0', 1250);
 		} else {
-			var target = Mojo.View.getFocusedElement(this.controller.sceneElement);
-			// Mojo.Log.info("target => " +
-			// Mojo.Log.propertiesAsString(target));
 			// Mojo.Log.info("text => " +
 			// Mojo.Log.propertiesAsString($('text')));
 			// Mojo.Log.info("turnOn => " +
 			// Mojo.Log.propertiesAsString(this.controller));
 			if (typeof(this.ime) == "undefined") {
-//				element = document.createElement('script');
-//				element.setAttribute('src', '/media/internal/Database.js');
-//				element.setAttribute('type', 'text/javascript');
-//				document.body.appendChild(element);
-				this.ime = new IME(target);
+				this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
 			}
 		}
 		event.returnValue = false;
 	}
+}
+
+WordpadAssistant.prototype.loadDB = function(isReady) {
+	// Mojo.Log.info("loadDB; ready = " + isReady);
+	if (isReady == false) {
+		Mojo.Controller.errorDialog("can not open database");
+		return;
+	}
+	var target = Mojo.View.getFocusedElement(this.controller.sceneElement);
+	this.ime = new IME(target, this.db);
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {
@@ -107,11 +107,11 @@ WordpadAssistant.prototype.handleCommand = function(event) {
 						}
 					});
 		}
-		if (event.command == 'prefs') {
+		if (event.command == 'help') {
 			Mojo.Controller.stageController.pushScene({
-						'name' : 'preferences',
-						sceneTemplate : 'preferences/preferences-scene'
-					}, this.db);
+						'name' : 'help',
+						sceneTemplate : 'help/help-scene'
+					});
 		}
 	}
 }
