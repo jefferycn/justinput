@@ -1,8 +1,5 @@
-var IME = function(text, db) {
-	this.text = text;
-	this.result = $('result');
-	this.db = db;
-	this.initialize();
+var IME = function(target, db) {
+	this.initialize(target, db);
 }
 IME.prototype = {
 	db : false,
@@ -15,9 +12,8 @@ IME.prototype = {
 	pageUpKey : 95,
 	spliterKey : 39,
 	spaceKey : 32,
-	// default value, will be rewrite
-	// selectingKeys : [32, 64, 46],
-	selectingKeys : [32, 49, 50],
+	selectingKeys : [32, 64, 46],
+	// selectingKeys : [32, 49, 50],
 	inputPhase : "",
 	inputPinyin : [],
 	selectedPinyin : [],
@@ -26,18 +22,32 @@ IME.prototype = {
 	hasCandidate : false,
 	offset : 0,
 	activeCandidateIndex : 2,
-	initialize : function() {
-		this.linkStyle();
-		this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
+	initialize : function(target, db) {
+		this.db = db;
+		var type = target.getAttribute('x-mojo-element');
+		if(type === null) {
+			this.text = target.parentElement;
+			//type = this.text.getAttribute('x-mojo-element');
+			//type = TextField
+		}else {
+			this.text = target;
+			this.isDiv = true;
+		}
+		//Mojo.Log.info("initialize ======> " + Mojo.Log.propertiesAsString(this.text));
+		//Mojo.Log.info("initialize ======> " + type);
+		//Mojo.Log.info("initialize ======> " + this.isDiv);
+		
+		// this.linkStyle();
 		this.inputPinyin = [];
 		// strange, can not use Mojo.Event.keydown
 		this.text.observe('keydown', this.textOnKeyDown.bind(this));
 		this.text.observe('keypress', this.textOnKeyPress.bind(this));
+		this.text.observe(Mojo.Event.propertyChange, this.textOnPropertyChange.bind(this));
 		this.allPinyin = new PrefixMap(PinyingSource.table);
 		// initial canvas
 		var canvas = Mojo.View.render({
 					object : {},
-					template : '/media/internal/canvas'
+					template : 'wordpad/canvas'
 				});
 		// Mojo.Log.info("initialize ======> " +
 		// Mojo.Log.propertiesAsString(this.text));
@@ -45,6 +55,14 @@ IME.prototype = {
 					after : canvas
 				});
 		$('canvas').hide();
+	},
+	textOnPropertyChange : function(e) {
+		var text = this.text;
+		var result = text.mojo.getValue();
+		var pos = text.mojo.getCursorPosition();
+		text.mojo.setCursorPosition(0, result.length);
+		document.execCommand('copy');
+		text.mojo.setCursorPosition(pos.selectionStart, pos.selectionStart);
 	},
 	linkStyle : function() {
 		element = document.createElement('link');
@@ -55,13 +73,6 @@ IME.prototype = {
 	},
 	readRet : function(value) {
 		// Mojo.Log.info("read data = " + value);
-	},
-	loadDB : function(isReady) {
-		Mojo.Log.info("loadDB; ready = " + isReady);
-		if (isReady == false) {
-			Mojo.Controller.errorDialog("can not open database");
-			return;
-		}
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) == false) {
@@ -148,8 +159,7 @@ IME.prototype = {
 					// choose from select list
 					if (this.inputPhase.length > 0) {
 						if (this.hasCandidate) {
-							Mojo.Log.info("textOnKeyPress ==> "
-									+ this.candidates);
+							// Mojo.Log.info("textOnKeyPress ==> " + this.candidates);
 							// Mojo.Log.info("textOnKeyPress ==> " +
 							// this.activeCandidateIndex);
 							var seqMap = [3, 1, 0, 2, 4];
@@ -254,14 +264,12 @@ IME.prototype = {
 		// save selected phase to database here
 		// by Jeffery
 		if (this.isDiv) {
-			// var exist = this.text.innerHTML;
-			this.text.innerHTML += str;
-		} else {
-			var exist = this.text.getValue();
-			this.text.value = exist + str;
+			this.text.textContent += str;
+			document.getSelection().setPosition(this.text, true);
+			return true;
 		}
-		return true;
-		// var exist = this.text.mojo.getValue();
+		
+		var exist = this.text.mojo.getValue();
 		if (exist.length > 0) {
 			var pos = this.text.mojo.getCursorPosition();
 		} else {
@@ -380,9 +388,13 @@ IME.prototype = {
 		};
 		var canvas = Mojo.View.render({
 					object : props,
-					template : '/media/internal/canvas'
+					template : 'wordpad/canvas'
 				});
 		$('canvas').outerHTML = canvas;
+		// set the new height
+		var height = (this.text.offsetTop + this.text.offsetHeight - 8) + 'px';
+		// Mojo.Log.info("height ======> " + height);
+		$('board').setStyle({top : height, left: '12px'});
 		// Mojo.Log.info("canvas" + canvas);
 	}
 };

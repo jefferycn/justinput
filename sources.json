@@ -5,14 +5,8 @@
         "scenes": "wordpad"
     },
 	{
-		"source": "app\/assistants\/preferences-assistant.js",
-		"scenes": "preferences"
-	},
-	{
-		"source": "app\/assistants\/keychangedialog-assistant.js"
-	},
-    {
-    	"source": "app\/models\/config.js"
+		"source": "app\/assistants\/help-assistant.js",
+		"scenes": "help"
 	},
     {
     	"source": "app\/models\/IME.js"
