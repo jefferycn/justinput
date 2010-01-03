@@ -59,6 +59,9 @@ IME.prototype = {
 	textOnPropertyChange : function(e) {
 		var text = this.text;
 		var result = text.mojo.getValue();
+		if(!result) {
+			return false;
+		}
 		var pos = text.mojo.getCursorPosition();
 		text.mojo.setCursorPosition(0, result.length);
 		document.execCommand('copy');
@@ -293,7 +296,6 @@ IME.prototype = {
 	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin(this.inputPhase);
-		// Mojo.Log.info("update inputPinyin ======> " + this.inputPinyin);
 		// Mojo.Log.info("update offset ======> " + this.offset);
 		var first = [];
 		var rest = this.inputPinyin;
@@ -313,10 +315,16 @@ IME.prototype = {
 			this.hasCandidate = true;
 		} else {
 			if (this.inputPhase.length > 0) {
-				// it is the pagination function
-				// now we found the last page, render it again
-				this.offset = this.offset - this.limit;
-				this.update();
+			// check if start with i u v
+				var start = this.inputPhase.substring(0, 1);
+				if(this.inArray(start, ['i', 'u', 'v'])) {
+					// do nothing
+				}else {
+					// it is the pagination function
+					// now we found the last page, render it again
+					this.offset = this.offset - this.limit;
+					this.update();
+				}
 			} else {
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
@@ -335,6 +343,10 @@ IME.prototype = {
 	},
 	sortArray : function() {
 		var candidates = [];
+		if(!this.candidates) {
+			candidates[2] = this.inputPhase.substring(1, this.inputPhase.length);
+			return candidates;
+		}
 		candidates[2] = this.candidates[0];
 		if (this.candidates[1]) {
 			candidates[1] = this.candidates[1];
@@ -393,8 +405,6 @@ IME.prototype = {
 		$('canvas').outerHTML = canvas;
 		// set the new height
 		var height = (this.text.offsetTop + this.text.offsetHeight - 8) + 'px';
-		// Mojo.Log.info("height ======> " + height);
 		$('board').setStyle({top : height, left: '12px'});
-		// Mojo.Log.info("canvas" + canvas);
 	}
 };
