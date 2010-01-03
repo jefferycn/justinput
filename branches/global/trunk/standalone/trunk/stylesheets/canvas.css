@@ -1,0 +1,32 @@
+#canvas {
+}
+#board {
+    margin-left: 0px;
+    padding:0 0 2px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 100000;
+    background-color:#FFFEED;
+    border:1px solid #CCCCCC;
+}
+#board ul {
+    color: #660033;
+    list-style-type: none;
+    margin-left:-36px;
+    margin-top:0;    
+}
+#board li {
+    float: left;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    margin: 0 2px;
+    font-size: 14px;
+    text-align: center;
+}
+.on {
+    background-color:#DBF3FF;
+    border:1px solid #85CCFF;
+    height: 17px;
+}
