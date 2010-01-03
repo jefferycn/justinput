@@ -37,7 +37,7 @@ IME.prototype = {
 		//Mojo.Log.info("initialize ======> " + type);
 		//Mojo.Log.info("initialize ======> " + this.isDiv);
 		
-		// this.linkStyle();
+		this.linkStyle();
 		this.inputPinyin = [];
 		// strange, can not use Mojo.Event.keydown
 		this.text.observe('keydown', this.textOnKeyDown.bind(this));
@@ -47,7 +47,7 @@ IME.prototype = {
 		// initial canvas
 		var canvas = Mojo.View.render({
 					object : {},
-					template : 'wordpad/canvas'
+					template : '/usr/palm/frameworks/mojo/justinput/canvas'
 				});
 		// Mojo.Log.info("initialize ======> " +
 		// Mojo.Log.propertiesAsString(this.text));
@@ -69,7 +69,7 @@ IME.prototype = {
 	},
 	linkStyle : function() {
 		element = document.createElement('link');
-		element.setAttribute('href', '/media/internal/canvas.css');
+		element.setAttribute('href', '/usr/palm/frameworks/mojo/justinput/canvas.css');
 		element.setAttribute('rel', 'stylesheet');
 		element.setAttribute('type', 'text/css');
 		document.getElementsByTagName('head').item(0).appendChild(element);
@@ -91,6 +91,7 @@ IME.prototype = {
 	toggleIme : function() {
 		if (this.active == true) {
 			this.active = false;
+			$('canvas').hide();
 		} else {
 			this.active = true;
 		}
@@ -400,11 +401,15 @@ IME.prototype = {
 		};
 		var canvas = Mojo.View.render({
 					object : props,
-					template : 'wordpad/canvas'
+					template : '/usr/palm/frameworks/mojo/justinput/canvas'
 				});
 		$('canvas').outerHTML = canvas;
 		// set the new height
-		var height = (this.text.offsetTop + this.text.offsetHeight - 8) + 'px';
+		var height = (this.text.offsetTop + this.text.offsetHeight - 8)
+		if(height > 200) {
+			height -= 80;
+		}
+		height += 'px';
 		$('board').setStyle({top : height, left: '12px'});
 	}
 };
