@@ -10,9 +10,12 @@ WordpadAssistant.prototype.setup = function() {
 				changeOnKeyPress : true
 			}, this.model = {});
 
-	//this.timePress = 0;
-	//document.observe('keypress', this.turnOn.bind(this));
-	//this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
+	// document.observe('keypress', this.turnOn.bind(this));
+	// this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
+
+	// var target = Mojo.View.getFocusedElement(this.controller.sceneElement);
+	// Mojo.Log.info("initialize ======> " +
+	// Mojo.Log.propertiesAsString(this.text));
 
 	this.appMenuModel = {
 		visible : true,
@@ -45,41 +48,8 @@ WordpadAssistant.prototype.setup = function() {
 							}]
 				}]
 	};
-	//this.controller.setupWidget(Mojo.Menu.commandMenu, undefined, this.cmdMenuModel);
-}
-
-WordpadAssistant.prototype.turnOn = function(event) {
-	if (event.keyCode == 231 || event.keyCode == 51) {
-		if (this.timePress == 0) {
-			this.timePress ++;
-			setTimeout(this.cleanTimer.bind(this), 900);
-		} else {
-			// Mojo.Log.info("text => " +
-			// Mojo.Log.propertiesAsString($('text')));
-			// Mojo.Log.info("turnOn => " +
-			// Mojo.Log.propertiesAsString(this.controller));
-			if (typeof(this.ime) == "undefined") {
-				this.db = new Database("ext:JustInput", "1", this.loadDB.bind(this));
-			}else {
-				this.ime.toggleIme();
-			}
-		}
-		event.returnValue = false;
-	}
-}
-
-WordpadAssistant.prototype.cleanTimer = function(event) {
-	this.timePress = 0;
-}
-
-WordpadAssistant.prototype.loadDB = function(isReady) {
-	// Mojo.Log.info("loadDB; ready = " + isReady);
-	if (isReady == false) {
-		Mojo.Controller.errorDialog("can not open database");
-		return;
-	}
-	var target = Mojo.View.getFocusedElement(this.controller.sceneElement);
-	this.ime = new IME(target, this.db);
+	this.controller.setupWidget(Mojo.Menu.commandMenu, undefined,
+			this.cmdMenuModel);
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {
@@ -133,20 +103,24 @@ WordpadAssistant.prototype.cleanup = function(event) {
 
 var timePress = 0;
 var ime = undefined;
+var loaded = false;
 document.onkeypress = function(event) {
 	if (event.keyCode == 231 || event.keyCode == 51) {
 		if (timePress == 0) {
-			timePress ++;
+			timePress++;
 			setTimeout(cleanTimer, 900);
 		} else {
-			if (typeof(ime) == "undefined") {
-				loadJS('Database');
+			if (loaded == false) {
 				loadJS('PinyingSource');
 				loadJS('PreFixMap');
 				loadJS('IME');
-				setTimeout(startIME, 900);
-			}else {
-				ime.toggleIme();
+				loaded = true;
+			}
+			if (typeof(ime) == "undefined") {
+				setTimeout(startIME, 200);
+			} else {
+				ime.uninstall();
+				ime = undefined;
 			}
 		}
 		event.returnValue = false;
@@ -165,15 +139,5 @@ function cleanTimer() {
 }
 
 function startIME() {
-	db = new Database("ext:JustInput", "1", loadDB);
-}
-
-function loadDB(isReady) {
-	if (isReady == false) {
-		Mojo.Controller.errorDialog("can not open database");
-		return;
-	}
-	var sceneElement = Mojo.Controller.getAppController().getActiveStageController().activeScene().sceneElement;
-	var target = Mojo.View.getFocusedElement(sceneElement);
-	ime = new IME(target, db);
+	ime = new IME();
 }
