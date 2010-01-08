@@ -2,6 +2,6 @@
 "logLevel": 99,
 "timingEnabled": false,
 "logEvents": false,
-"debuggingEnabled": false,
+"debuggingEnabled": true,
 "escapeHTMLInTemplates" : false
 }
