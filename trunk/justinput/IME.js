@@ -6,7 +6,7 @@ IME.prototype = {
 	targetType : 'textfield',
 	active : true,
 	template : '/usr/palm/frameworks/mojo/justinput/canvas',
-	// template : 'wordpad/canvas',
+	//template : 'canvas',
 	text : undefined,
 	limit : 5,
 	allPinyin : undefined,
@@ -42,7 +42,6 @@ IME.prototype = {
 			this.text = target;
 			this.targetType = 'div';
 		}
-		this.linkStyle();
 		this.inputPinyin = [];
 		// strange, can not use Mojo.Event.keydown
 		this.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
@@ -53,11 +52,8 @@ IME.prototype = {
 		// this.textOnPropertyChange.bind(this));
 		this.allPinyin = new PrefixMap(PinyingSource.table);
 		// initial canvas
-		var canvas = Mojo.View.render({
-					object : {},
-					template : this.template
-				});
-		document.body.appendChild(canvas);
+		var canvas = Mojo.View.render({object:{},template:this.template});
+		document.body.insert({after:canvas});
 		$('board').hide();
 	},
 	uninstall : function() {
@@ -75,16 +71,6 @@ IME.prototype = {
 		text.mojo.setCursorPosition(0, result.length);
 		document.execCommand('copy');
 		text.mojo.setCursorPosition(pos.selectionStart, pos.selectionStart);
-	},
-	linkStyle : function() {
-		element = document.createElement('link');
-		element.setAttribute('href', '/media/internal/canvas.css');
-		element.setAttribute('rel', 'stylesheet');
-		element.setAttribute('type', 'text/css');
-		document.getElementsByTagName('head').item(0).appendChild(element);
-	},
-	readRet : function(value) {
-		// Mojo.Log.info("read data = " + value);
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) == false) {
@@ -444,7 +430,7 @@ IME.prototype = {
 				});
 		$('canvas').outerHTML = canvas;
 		// set the new height
-		var height = (this.text.offsetTop + this.text.offsetHeight - 8) + 'px';
+		var height = (this.text.offsetTop + this.text.offsetHeight + 47) + 'px';
 		$('board').setStyle({
 					top : height,
 					left : '12px'
