@@ -3,8 +3,6 @@ var IME = Class.create({
 	targetType : '',
 	active : true,
 	enMode : false,
-	template : '/usr/palm/frameworks/mojo/justinput/canvas',
-	// template : 'canvas',
 	text : undefined,
 	limit : 5,
 	allPinyin : undefined,
@@ -13,7 +11,7 @@ var IME = Class.create({
 	spliterKey : 39,
 	spaceKey : 32,
 	selectingKeys : [32, 64, 46],
-	//selectingKeys : [32, 49, 50],
+	// selectingKeys : [32, 49, 50],
 	inputPhase : "",
 	inputPinyin : [],
 	selectedPinyin : [],
@@ -24,7 +22,6 @@ var IME = Class.create({
 	candidatesNum : 0,
 	activeCandidateIndex : 2,
 	initialize : function() {
-		// strange, can not use Mojo.Event.keydown
 		var fxTextOnKeyDown = this.textOnKeyDown.bind(this);
 		var fxTextOnKeyPress = this.textOnKeyPress.bind(this);
 		var fxTextOnFocus = this.textOnFocus.bind(this);
@@ -40,35 +37,10 @@ var IME = Class.create({
 		}
 		this.allPinyin = new PrefixMap(PinyingSource.table);
 		// initial canvas
-		var canvas = '<div id="canvas"><div id="board" style="margin-left: 0px;padding:0 0 2px;position: absolute;top: 0px;left: 0px;z-index: 100000;background-color:#FFFEED;border:1px solid #CCCCCC;"><ul style="color: #660033;list-style-type: none;margin-left:-36px;margin-top:0;"><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate" style="width: 100%;color: #660033;list-style-type: none;margin-left:-36px;margin-top:0;"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
-		//var canvas ='<div  class="char-selector-container" id="canvas"><div class="char-selector-wrapper"><div class="char-selector-content" x-mojo-element="Scroller1" id="board"><div style="width: 100%;height: 48px;line-height: 20px;display:inline-block;text-align: center;font-weight: normal;border-bottom: 1px solid #999;border-right: 1px solid #999;"><div style="color: red;width: 95%;text-align: left;padding : 0 0 0 5px;font-weight:bold;font-size:14px;" id="workspace"></div><div style="color: blue;width: 95%;text-align: left;padding : 0 0 0 5px;font-weight:bold;font-size:14px;" id="candidate"><div></div><div></div><div></div><div></div><div></div></div></div></div></div></div>';
+		var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
 		document.body.insert({
 					after : canvas
 				});
-				
-				$$('#board li').each(function(li){
-		li.setStyle({
-    "font-size": "14px",
-    "padding-left": "6px",
-    "padding-right": "6px",
-    "padding-top": "0",
-    "padding-bottom": "0",
-    "margin-left": "2px",
-    "margin-right": "2px",
-    "margin-top": "0",
-    "margin-bottom": "0",
-    "height": "18px",
-    "line-height": "18px"
-		});
-		}
-		);
-		$$('#candidate li').each(function(li){
-		li.setStyle({
-			"float": "left",
-    		"text-align": "center"
-		});
-		}
-		);
 		this.setPosition();
 		$('board').hide();
 	},
@@ -82,6 +54,51 @@ var IME = Class.create({
 			}
 		}
 		return false;
+	},
+	getCursorPos : function() {
+		var a = this.text;
+		var b = 0;
+		if (a.selectionStart != undefined) {
+			b = a.selectionStart
+		} else {
+			var c;
+			if (a.tagName == "TEXTAREA") {
+				var d = 0;
+				var e = a.ownerDocument.selection.createRange();
+				var f = a.ownerDocument.body.createTextRange();
+				f.moveToElementText(a);
+				for (d = 0; f.compareEndPoints("StartToStart", e) < 0; d++) {
+					f.moveStart('character', 1);
+				}
+				for (var i = 0; i <= d; i++) {
+					if (a.value.charAt(i) == '\n') {
+						d++;
+					}
+				}
+				return d;
+			} else {
+				c = document.selection.createRange();
+			}
+			c.moveStart("character", -a.value.length);
+			b = c.text.length;
+		}
+		return b;
+	},
+	setCursorPos : function(n) {
+		var a = this.text;
+		if (a.selectionStart != undefined) {
+			a.selectionStart = n;
+			a.selectionEnd = n
+		} else {
+			var b = parseInt(n);
+			if (isNaN(b)) {
+				return;
+			}
+			var c = a.createTextRange();
+			c.moveStart("character", b);
+			c.collapse(true);
+			c.select()
+		}
 	},
 	toggleIme : function() {
 		if (this.enMode == true) {
@@ -103,8 +120,6 @@ var IME = Class.create({
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
-		// Mojo.Log.info("textOnKeyPress ======> " +
-		// Mojo.Log.propertiesAsString(e));
 		if (this.active == false) {
 			return true;
 		} else {
@@ -123,7 +138,7 @@ var IME = Class.create({
 					for (var i = 0; i < selected.length; i++) {
 						this.inputPinyin.unshift(this.selectedPinyin.pop());
 					}
-					this.inputPhase = this.inputPinyin.join('');
+					this.inputPhase = this.inputPinyin.join("'");
 					this.update();
 					e.returnValue = false;
 				} else {
@@ -137,7 +152,6 @@ var IME = Class.create({
 		}
 	},
 	textOnKeyPress : function(e) {
-		
 		if (this.active == false) {
 			return true;
 		} else {
@@ -145,72 +159,73 @@ var IME = Class.create({
 			this.text = e.srcElement;
 		}
 		var key = e.keyCode;
-			if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65
-					&& key <= 90) {
-				if (key == this.spliterKey && this.hasCandidate === false) {
-					return String.fromCharCode(key);
-				}
-				if (key >= 65 && key <= 90) {
-					// force uppercase to lower case
-					key += 32;
-				}
-				this.inputPhase += String.fromCharCode(key);
-				this.update();
-			} else {
-				if (this.inArray(key, this.selectingKeys)) {
-					// choose from select list
-					if (this.inputPhase.length > 0) {
-						if (this.hasCandidate) {
-							var seqMap = [3, 1, 0, 2, 4];
-							if (key === this.selectingKeys[0]) {
-								this.phaseSelected(seqMap[this.activeCandidateIndex]);
-							}
-							var candidatesLength = this.candidates.length;
-							if (key === this.selectingKeys[1]) {
-								if (this.activeCandidateIndex > 0) {
-									this.activeCandidateIndex--;
-									if (seqMap[this.activeCandidateIndex] + 1 > candidatesLength) {
-										this.activeCandidateIndex++;
-									}
-								}
-							}
-							if (key === this.selectingKeys[2]) {
-								if (this.activeCandidateIndex < 4) {
-									this.activeCandidateIndex++;
-									if (seqMap[this.activeCandidateIndex] + 1 > candidatesLength) {
-										this.activeCandidateIndex--;
-									}
-								}
-							}
-							this.update();
-						} else {
-							// there is no cadidates, but the inputPhase is not
-							// empty, just push it out
-							this.sendResult(this.inputPhase.substring(1,
-									this.inputPhase.length));
-							this.inputPhase = '';
-							this.offset = 0;
-							this.activeCandidateIndex = 2;
-							this.update();
+		if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65
+				&& key <= 90) {
+			if (key == this.spliterKey && this.hasCandidate === false) {
+				return String.fromCharCode(key);
+			}
+			if (key >= 65 && key <= 90) {
+				// force uppercase to lower case
+				key += 32;
+			}
+			this.inputPhase += String.fromCharCode(key);
+			this.update();
+		} else {
+			if (this.inArray(key, this.selectingKeys)) {
+				// choose from select list
+				if (this.inputPhase.length > 0) {
+					if (this.hasCandidate) {
+						var seqMap = [3, 1, 0, 2, 4];
+						if (key === this.selectingKeys[0]) {
+							this
+									.phaseSelected(seqMap[this.activeCandidateIndex]);
 						}
+						var candidatesLength = this.candidates.length;
+						if (key === this.selectingKeys[1]) {
+							if (this.activeCandidateIndex > 0) {
+								this.activeCandidateIndex--;
+								if (seqMap[this.activeCandidateIndex] + 1 > candidatesLength) {
+									this.activeCandidateIndex++;
+								}
+							}
+						}
+						if (key === this.selectingKeys[2]) {
+							if (this.activeCandidateIndex < 4) {
+								this.activeCandidateIndex++;
+								if (seqMap[this.activeCandidateIndex] + 1 > candidatesLength) {
+									this.activeCandidateIndex--;
+								}
+							}
+						}
+						this.update();
 					} else {
-						return String.fromCharCode(key);
+						// there is no cadidates, but the inputPhase is not
+						// empty, just push it out
+						this.sendResult(this.inputPhase.substring(1,
+								this.inputPhase.length));
+						this.inputPhase = '';
+						this.offset = 0;
+						this.activeCandidateIndex = 2;
+						this.update();
 					}
 				} else {
-                    if (e.keyCode == this.pageDownKey && this.hasCandidate) {
-                        this.pageDown();
-                        e.returnValue = false;
-                        return false;
-                    }
-                    if (e.keyCode == this.pageUpKey && this.hasCandidate) {
-                        this.pageUp();
-                        e.returnValue = false;
-                        return false;
-                    }
-					// symbol keys
 					return String.fromCharCode(key);
 				}
+			} else {
+				if (e.keyCode == this.pageDownKey && this.hasCandidate) {
+					this.pageDown();
+					e.returnValue = false;
+					return false;
+				}
+				if (e.keyCode == this.pageUpKey && this.hasCandidate) {
+					this.pageUp();
+					e.returnValue = false;
+					return false;
+				}
+				// symbol keys
+				return String.fromCharCode(key);
 			}
+		}
 		e.returnValue = false;
 	},
 	pageUp : function() {
@@ -257,37 +272,54 @@ var IME = Class.create({
 			this.selectedPinyin.push(this.inputPinyin.shift());
 		}
 		this.selected.push(selected);
-		this.inputPhase = this.inputPinyin.join('');
+		this.inputPhase = this.inputPinyin.join("'");
 		// clean the pagination offset
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
-		// Mojo.Log.info("phaseSelected inputPhase ======> " + this.inputPhase);
 		this.update();
 	},
 	sendResult : function(str) {
-		// save selected phase to database here
-		// by Jeffery
-		// Mojo.Log.info("textOnKeyPress ======> " +
-		// Mojo.Log.propertiesAsString(this.text));
+		var result;
+		var cur = this.getCursorPos();
 		switch (this.targetType) {
 			case 'DIV' :
-				this.text.textContent += str;
-				document.getSelection().setPosition(this.text, true);
+				var exist = this.text.textContent;
+				if (cur < exist.length) {
+					result = exist.substr(0, cur) + str
+							+ exist.substr(cur, exist.length);
+				} else {
+					result = exist + str;
+				}
+				this.text.textContent = result;
 				break;
 			case 'TEXTAREA' :
-				this.text.value += str;
-				break;
 			case 'INPUT' :
-				this.text.value += str;
+				var exist = this.text.value;
+				if (cur < exist.length) {
+					result = exist.substr(0, cur) + str
+							+ exist.substr(cur, exist.length);
+				} else {
+					result = exist + str;
+				}
+				this.text.value = result;
 				break;
 		}
+		this.setCursorPos(cur + parseInt(str.length));
 	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin();
 
+		var rest = this.inputPinyin;
+        if (rest.length > 6) {
+			first = rest.splice(0, 6);
+		} else {
+			first = rest;
+			rest = [];
+		}
+		
 		var query = [];
-		for (var i = 0; i < this.inputPinyin.length; i++) {
-			var q = this.inputPinyin[i];
+		for (var i = 0; i < first.length; i++) {
+			var q = first[i];
 			var full = "true";
 			if (q.length == 1 && !(q == 'a' || q == 'e' || q == 'o')) {
 				full = "false";
@@ -330,26 +362,26 @@ var IME = Class.create({
 			this.updateCanvas();
 		} else {
 			this.candidatesNum = 0;
-			 if (this.inputPhase.length > 0) {
-			 // check if start with i u v
-			 var start = this.inputPhase.substring(0, 1);
-			 if (this.inArray(start, ['i', 'u', 'v'])) {
-			 	this.candidates = [];
-			 	this.candidates.push(this.inputPhase.substring(1));
-				this.updateCanvas();
-			 }else {
-			 	// empty the inputPhase
-			 	this.inputPhase = "";
-			 }
-			 } else {
-			this.hasCandidate = false;
-			this.selectedPinyin = [];
-			this.sendResult(this.selected.join(''));
-			this.selected = [];
-			this.offset = 0;
-			this.activeCandidateIndex = 2;
-			$('board').hide();
-			 }
+			if (this.inputPhase.length > 0) {
+				// check if start with i u v
+				var start = this.inputPhase.substring(0, 1);
+				if (this.inArray(start, ['i', 'u', 'v'])) {
+					this.candidates = [];
+					this.candidates.push(this.inputPhase.substring(1));
+					this.updateCanvas();
+				} else {
+					// empty the inputPhase
+					this.inputPhase = "";
+				}
+			} else {
+				this.hasCandidate = false;
+				this.selectedPinyin = [];
+				this.sendResult(this.selected.join(''));
+				this.selected = [];
+				this.offset = 0;
+				this.activeCandidateIndex = 2;
+				$('board').hide();
+			}
 		}
 	},
 	sortArray : function() {
@@ -391,25 +423,25 @@ var IME = Class.create({
 		var candidates = this.sortArray();
 		$('workspace').update(workspace);
 		var list = $('candidate').childElements();
-		for(var i = 0;i < list.length;i ++){
+		for (var i = 0; i < list.length; i++) {
 			list[i].update(candidates[i]);
 			if (i == this.activeCandidateIndex) {
-			list[i].setStyle({
-			"background-color":"#DBF3FF",
-			"border-width" : "1px",
-			"border-style":"solid",
-    		"border-color":"#85CCFF"
-    		});
-			}else {
 				list[i].setStyle({
-			"background-color":"",
-			"border-width" : "",
-			"border-style":"",
-    		"border-color":""
-    		});
+							"background-color" : "#DBF3FF",
+							"border-width" : "1px",
+							"border-style" : "solid",
+							"border-color" : "#85CCFF"
+						});
+			} else {
+				list[i].setStyle({
+							"background-color" : "",
+							"border-width" : "",
+							"border-style" : "",
+							"border-color" : ""
+						});
 			}
 		}
-		//$('ms').update(this.ms);
+		// $('ms').update(this.ms);
 		this.setPosition();
 		$('board').show();
 	},
