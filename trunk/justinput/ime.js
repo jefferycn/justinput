@@ -28,7 +28,7 @@ var IME = Class.create({
 		var fxTextOnBlur = this.textOnBlur.bind(this);
 
 		// x-mojo-element="SmartTextField"
-		var g = $$('input, textarea, div[class~=editable]');
+		var g = $$('input[type=text], textarea, div[class~=editable]');
 		for (var i = 0; i < g.length; i++) {
 			g[i].addEventListener('keydown', fxTextOnKeyDown, true);
 			g[i].addEventListener('keypress', fxTextOnKeyPress, true);
@@ -76,7 +76,9 @@ var IME = Class.create({
 					}
 				}
 				return d;
-			} else {
+			} else if(a.tagName == "DIV") {
+				return a.innerHTML.length;
+			}else {
 				c = document.selection.createRange();
 			}
 			c.moveStart("character", -a.value.length);
@@ -86,6 +88,9 @@ var IME = Class.create({
 	},
 	setCursorPos : function(n) {
 		var a = this.text;
+		if(a.tagName == "DIV") {
+			return false;
+		}
 		if (a.selectionStart != undefined) {
 			a.selectionStart = n;
 			a.selectionEnd = n
@@ -114,7 +119,7 @@ var IME = Class.create({
 			this.active = true;
 		}
 		this.text = e.currentTarget;
-		this.targetType = e.srcElement.toUpperCase();
+		this.targetType = e.srcElement.tagName;
 	},
 	textOnBlur : function(e) {
 		this.active = false;
@@ -123,8 +128,8 @@ var IME = Class.create({
 		if (this.active == false) {
 			return true;
 		} else {
-			this.targetType = e.srcElement.type.toUpperCase();
 			this.text = e.srcElement;
+			this.targetType = e.srcElement.tagName;
 		}
 		if (e.keyCode == 8) {
 			if (this.inputPhase.length > 0) {
@@ -155,7 +160,7 @@ var IME = Class.create({
 		if (this.active == false) {
 			return true;
 		} else {
-			this.targetType = e.srcElement.type.toUpperCase();
+			this.targetType = e.srcElement.tagName;
 			this.text = e.srcElement;
 		}
 		var key = e.keyCode;
@@ -283,14 +288,14 @@ var IME = Class.create({
 		var cur = this.getCursorPos();
 		switch (this.targetType) {
 			case 'DIV' :
-				var exist = this.text.textContent;
+				var exist = this.text.innerHTML;
 				if (cur < exist.length) {
 					result = exist.substr(0, cur) + str
 							+ exist.substr(cur, exist.length);
 				} else {
 					result = exist + str;
 				}
-				this.text.textContent = result;
+				this.text.innerHTML = result;
 				break;
 			case 'TEXTAREA' :
 			case 'INPUT' :
