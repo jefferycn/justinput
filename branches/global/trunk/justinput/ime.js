@@ -22,18 +22,39 @@ var IME = Class.create({
 	candidatesNum : 0,
 	activeCandidateIndex : 2,
 	initialize : function() {
+		// set all working enviroment
+		this.hasCandidate = false;
+		this.selectedPinyin = [];
+		this.selected = [];
+		this.offset = 0;
+		this.activeCandidateIndex = 2;
+				
 		var fxTextOnKeyDown = this.textOnKeyDown.bind(this);
 		var fxTextOnKeyPress = this.textOnKeyPress.bind(this);
 		var fxTextOnFocus = this.textOnFocus.bind(this);
 		var fxTextOnBlur = this.textOnBlur.bind(this);
 
-		// x-mojo-element="SmartTextField"
-		var g = $$('input[type=text], textarea, div[class~=editable]');
+		// x-mojo-element="SmartTextField" div[class~=editable]
+		var g = $$('input[type=text], textarea, div[x-mojo-element="SmartTextField"], div[x-mojo-element="RichTextEdit"]');
 		for (var i = 0; i < g.length; i++) {
-			g[i].addEventListener('keydown', fxTextOnKeyDown, true);
-			g[i].addEventListener('keypress', fxTextOnKeyPress, true);
-			g[i].addEventListener('focus', fxTextOnFocus, true);
-			g[i].addEventListener('blur', fxTextOnBlur, true);
+			var handler;
+			if(g[i].tagName == "DIV") {
+				var smart = g[i].getElementsBySelector('div[class~=editable]');
+				//Mojo.Log.info("initialize ======> " + Mojo.Log.propertiesAsString(smart[0]));
+				if(smart[0]) {
+					handler = smart[0];
+				}else {
+					handler = g[i];
+				}
+				var fxTextOnTap = this.textOnTap.bind(this);
+				handler.addEventListener('click', fxTextOnTap, true);
+			}else {
+				handler = g[i];
+			}
+			handler.addEventListener('keydown', fxTextOnKeyDown, true);
+			handler.addEventListener('keypress', fxTextOnKeyPress, true);
+			handler.addEventListener('focus', fxTextOnFocus, true);
+			handler.addEventListener('blur', fxTextOnBlur, true);
 		}
 		this.allPinyin = new PrefixMap(PinyingSource.table);
 		// initial canvas
@@ -77,11 +98,10 @@ var IME = Class.create({
 				}
 				return d;
 			} else if(a.tagName == "DIV") {
-				return a.innerHTML.length;
 			}else {
 				c = document.selection.createRange();
+				c.moveStart("character", -a.value.length);
 			}
-			c.moveStart("character", -a.value.length);
 			b = c.text.length;
 		}
 		return b;
@@ -106,22 +126,29 @@ var IME = Class.create({
 		}
 	},
 	toggleIme : function() {
-		if (this.enMode == true) {
-			this.enMode = false;
+		if (this.active == true) {
 			this.active = false;
 		} else {
-			this.enMode = true;
 			this.active = true;
 		}
 	},
-	textOnFocus : function(e) {
-		if (this.enMode == false) {
-			this.active = true;
+	textOnTap : function(e) {
+		if ($('__jeffery_tag__') != null) {
+			$('__jeffery_tag__').remove();
 		}
+	},
+	textOnFocus : function(e) {
+		if ($('__jeffery_tag__') != null) {
+			$('__jeffery_tag__').remove();
+		}
+		this.active = true;
 		this.text = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
 	},
 	textOnBlur : function(e) {
+		if ($('__jeffery_tag__') != null) {
+			$('__jeffery_tag__').remove();
+		}
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
@@ -182,8 +209,7 @@ var IME = Class.create({
 					if (this.hasCandidate) {
 						var seqMap = [3, 1, 0, 2, 4];
 						if (key === this.selectingKeys[0]) {
-							this
-									.phaseSelected(seqMap[this.activeCandidateIndex]);
+							this.phaseSelected(seqMap[this.activeCandidateIndex]);
 						}
 						var candidatesLength = this.candidates.length;
 						if (key === this.selectingKeys[1]) {
@@ -206,8 +232,12 @@ var IME = Class.create({
 					} else {
 						// there is no cadidates, but the inputPhase is not
 						// empty, just push it out
-						this.sendResult(this.inputPhase.substring(1,
-								this.inputPhase.length));
+					if (this.inputPhase == 'veng') {
+							this.active = false;
+						} else {
+							this.candidates.push(this.inputPhase.substring(1));
+							this.sendResult(this.inputPhase.substring(1));
+						}
 						this.inputPhase = '';
 						this.offset = 0;
 						this.activeCandidateIndex = 2;
@@ -281,24 +311,25 @@ var IME = Class.create({
 		// clean the pagination offset
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
-		this.update();
 	},
 	sendResult : function(str) {
 		var result;
-		var cur = this.getCursorPos();
 		switch (this.targetType) {
 			case 'DIV' :
-				var exist = this.text.innerHTML;
-				if (cur < exist.length) {
-					result = exist.substr(0, cur) + str
-							+ exist.substr(cur, exist.length);
+				if ($('__jeffery_tag__') == null) {
+					var pos = window.getSelection().getRangeAt(0);
+					var posTag = document.createElement('span');
+					posTag.setAttribute("id", "__jeffery_tag__");
+					//posTag.innerHTML = str;
+					pos.insertNode(posTag);
+					pos.insertNode(document.createTextNode(str));
 				} else {
-					result = exist + str;
+					$('__jeffery_tag__').insert({"before":str});
 				}
-				this.text.innerHTML = result;
 				break;
 			case 'TEXTAREA' :
 			case 'INPUT' :
+				var cur = this.getCursorPos();
 				var exist = this.text.value;
 				if (cur < exist.length) {
 					result = exist.substr(0, cur) + str
@@ -307,9 +338,9 @@ var IME = Class.create({
 					result = exist + str;
 				}
 				this.text.value = result;
+				this.setCursorPos(cur + parseInt(str.length));
 				break;
 		}
-		this.setCursorPos(cur + parseInt(str.length));
 	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin();
@@ -372,7 +403,11 @@ var IME = Class.create({
 				var start = this.inputPhase.substring(0, 1);
 				if (this.inArray(start, ['i', 'u', 'v'])) {
 					this.candidates = [];
-					this.candidates.push(this.inputPhase.substring(1));
+					if(this.inputPhase == 'veng') {
+						this.candidates.push("英文模式");
+					} else {
+						this.candidates.push(this.inputPhase.substring(1));
+					}
 					this.updateCanvas();
 				} else {
 					// empty the inputPhase
