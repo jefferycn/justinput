@@ -405,7 +405,7 @@ var PinyingSource = {
 											g : ["ling", {}, 0]
 										}, 1],
 								e : ["lie", {}, 0],
-								a : ["lia", {
+								a : [, {
 											o : ["liao", {}, 0],
 											n : ["lian", {
 														g : ["liang", {}, 0]
@@ -714,6 +714,6 @@ var nonCompleteMap = ["zh", "zho", "zhon", "zua", "zo", "zon", "yua", "yon",
 		"xua", "xio", "xion", "we", "tua", "to", "ton", "tin", "tia", "ten",
 		"sh", "sho", "sa", "so", "son", "rua", "ro", "ron", "ra", "qua", "qio",
 		"qion", "pia", "pe", "nua", "no", "non", "nia", "mia", "lua", "lo",
-		"lon", "len", "ko", "kon", "jua", "jio", "jion", "ho", "hon", "go",
+		"lon", "len","lia", "ko", "kon", "jua", "jio", "jion", "ho", "hon", "go",
 		"gon", "fe", "dua", "do", "don", "din", "dia", "den", "ch", "chua",
 		"cho", "chon", "cua", "co", "con", "cen", "bia", "be"];
