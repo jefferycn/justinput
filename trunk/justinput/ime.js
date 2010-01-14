@@ -385,7 +385,7 @@ IME.prototype = {
 						"q" : this.inputPinyin.reduce(),
 						"full" : "false"
 					});
-			table = "wb_words";
+			table = "words";
 		} else {
 			table = "words";
 			var rest = this.inputPinyin;
