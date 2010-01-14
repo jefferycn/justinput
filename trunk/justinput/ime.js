@@ -3,7 +3,7 @@ var handlerBox = {};
 var IME = Class.create();
 
 IME.prototype = {
-	controller : false,
+	wb : false,
 	targetType : '',
 	active : false,
 	enMode : false,
@@ -25,15 +25,20 @@ IME.prototype = {
 	offset : 0,
 	candidatesNum : 0,
 	activeCandidateIndex : 2,
-	initialize : function() {
+	initialize : function(type) {
 		// set all working enviroment
+		if (type == 'wb') {
+			this.wb = true;
+		}
 		this.hasCandidate = false;
 		this.selectedPinyin = [];
 		this.selected = [];
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
 		this.toggleIme();
-		this.allPinyin = new PrefixMap(PinyingSource.table);
+		if (this.wb == false) {
+			this.allPinyin = new PrefixMap(PinyingSource.table);
+		}
 		// initial canvas
 		if ($('canvas') == null) {
 			var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
@@ -111,9 +116,6 @@ IME.prototype = {
 			this.active = true;
 		}
 
-		if (handlerBox.fxTextOnTap) {
-			this.stopObservingTap = handlerBox.fxTextOnTap;
-		}
 		if (handlerBox.fxTextOnKeyDown) {
 			this.stopObservingKeyDown = handlerBox.fxTextOnKeyDown;
 		}
@@ -146,13 +148,6 @@ IME.prototype = {
 				} else {
 					handler = g[i];
 				}
-				if (this.stopObservingTap) {
-					handler.stopObserving('click', this.stopObservingTap, true);
-				}
-				if (this.active == true) {
-					handlerBox.fxTextOnTap = this.textOnTap.bind(this);
-					handler.observe('click', handlerBox.fxTextOnTap, true);
-				}
 			} else {
 				handler = g[i];
 			}
@@ -179,23 +174,12 @@ IME.prototype = {
 			}
 		}
 	},
-	textOnTap : function(e) {
-		if ($('__jeffery_tag__')) {
-			$('__jeffery_tag__').remove();
-		}
-	},
 	textOnFocus : function(e) {
-		if ($('__jeffery_tag__')) {
-			$('__jeffery_tag__').remove();
-		}
 		this.active = true;
 		this.text = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
 	},
 	textOnBlur : function(e) {
-		if ($('__jeffery_tag__')) {
-			$('__jeffery_tag__').remove();
-		}
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
@@ -248,6 +232,13 @@ IME.prototype = {
 				key += 32;
 			}
 			this.inputPhase += String.fromCharCode(key);
+			if (this.wb == true) {
+				if (this.inputPhase.length > 4) {
+					this.inputPhase = this.inputPhase.substr(0, 4);
+					e.returnValue = false;
+					return false;
+				}
+			}
 			this.update();
 		} else {
 			if (this.inArray(key, this.selectingKeys)) {
@@ -280,8 +271,9 @@ IME.prototype = {
 					} else {
 						// there is no cadidates, but the inputPhase is not
 						// empty, just push it out
-						if (this.inputPhase == 'veng') {
-							this.active = false;
+						if (this.wb == true) {
+							this.candidates.push(this.inputPhase);
+							this.sendResult(this.inputPhase);
 						} else {
 							this.candidates.push(this.inputPhase.substring(1));
 							this.sendResult(this.inputPhase.substring(1));
@@ -326,6 +318,9 @@ IME.prototype = {
 		}
 	},
 	formatPinyin : function() {
+		if (this.wb == true) {
+			return [this.inputPhase];
+		}
 		var pinyins = [];
 		var phases = this.inputPhase.split("'");
 		for (var i = 0; i < phases.length; i++) {
@@ -364,18 +359,7 @@ IME.prototype = {
 		var result;
 		switch (this.targetType) {
 			case 'DIV' :
-				if ($('__jeffery_tag__') == null) {
-					var pos = window.getSelection().getRangeAt(0);
-					var posTag = document.createElement('span');
-					posTag.setAttribute("id", "__jeffery_tag__");
-					// posTag.innerHTML = str;
-					pos.insertNode(posTag);
-					pos.insertNode(document.createTextNode(str));
-				} else {
-					$('__jeffery_tag__').insert({
-								"before" : str
-							});
-				}
+				document.execCommand("insertText", true, str);
 				break;
 			case 'TEXTAREA' :
 			case 'INPUT' :
@@ -394,38 +378,48 @@ IME.prototype = {
 	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin();
-		Mojo.Log.info("update ======> " + this.inputPhase);
-		Mojo.Log.info("initialize ======> " + this.inputPinyin);
-		var rest = this.inputPinyin;
-		if (rest.length > 6) {
-			first = rest.splice(0, 6);
-		} else {
-			first = rest;
-			rest = [];
-		}
-
 		var query = [];
-		for (var i = 0; i < first.length; i++) {
-			var q = first[i];
-			var full = "true";
-			if (q.length == 1 && !(q == 'a' || q == 'e' || q == 'o')) {
-				full = "false";
-			} else {
-				if (this.inArray(q, nonCompleteMap)) {
-					full = "false";
-				}
-			}
+		var table;
+		if (this.wb == true) {
 			query.push({
-						"q" : q,
-						"full" : full
+						"q" : this.inputPinyin.reduce(),
+						"full" : "false"
 					});
-		}
+			table = "wb_words";
+		} else {
+			table = "words";
+			var rest = this.inputPinyin;
+			var first;
+			if (rest.length > 6) {
+				first = rest.splice(0, 6);
+			} else {
+				first = rest;
+				rest = [];
+			}
 
+			for (var i = 0; i < first.length; i++) {
+				var q = first[i];
+				var full = "true";
+				if (q.length == 1 && !(q == 'a' || q == 'e' || q == 'o')) {
+					full = "false";
+				} else {
+					if (this.inArray(q, nonCompleteMap)) {
+						full = "false";
+					}
+				}
+				query.push({
+							"q" : q,
+							"full" : full
+						});
+			}
+		}
+		//Mojo.Log.info("initialize ======> " + table);
 		new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
 						query : query,
-						offset : this.offset
+						offset : this.offset,
+						table : table
 					},
 					onSuccess : this.getCandidates.bind(this),
 					onFailure : this.getCandidatesFalse.bind(this)
@@ -443,13 +437,24 @@ IME.prototype = {
 	getCandidates : function(response) {
 		this.ms = response.ms;
 		if (response.count > 0) {
-			this.candidates = response.words;
-			this.candidatesNum = response.count;
-			this.hasCandidate = true;
-			this.updateCanvas();
+			if (this.wb == true && response.count == 1) {
+				this.sendResult(response.words.reduce());
+				this.hasCandidate = false;
+				this.selectedPinyin = [];
+				this.selected = [];
+				this.offset = 0;
+				this.activeCandidateIndex = 2;
+				this.inputPhase = "";
+				$('board').hide();
+			} else {
+				this.candidates = response.words;
+				this.candidatesNum = response.count;
+				this.hasCandidate = true;
+				this.updateCanvas();
+			}
 		} else {
 			this.candidatesNum = 0;
-			if (this.inputPhase.length > 0) {
+			if (this.inputPhase.length > 0 && this.wb == false) {
 				// check if start with i u v
 				var start = this.inputPhase.substring(0, 1);
 				if (this.inArray(start, ['i', 'u', 'v'])) {
