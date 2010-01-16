@@ -14,6 +14,7 @@ IME.prototype = {
 	pageUpKey : 95,
 	spliterKey : 39,
 	spaceKey : 32,
+    // alt key : 129/altKey=true  shift key : 16/shiftKey=true
 	selectingKeys : [32, 64, 46],
 	// selectingKeys : [32, 49, 50],
 	inputPhase : "",
@@ -480,7 +481,7 @@ IME.prototype = {
 	getCandidates : function(response) {
 		this.ms = response.ms;
 		if (response.count > 0) {
-			if (this.wb == true && response.count == 1 && this.inputPhase.length == 4) {
+			if (this.wb == true && response.count == 1) {
 				this.sendResult(response.words.reduce());
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
@@ -497,16 +498,15 @@ IME.prototype = {
 			}
 		} else {
 			this.candidatesNum = 0;
-			if (this.inputPhase.length > 0 && this.wb == false) {
-				// check if start with i u v
+			if (this.inputPhase.length > 0) {
+                this.candidates = [];
 				var start = this.inputPhase.substring(0, 1);
 				if (this.inArray(start, ['i', 'u', 'v'])) {
-					this.candidates = [];
-					this.updateCanvas();
+                    this.candidates.push(this.inputPhase.substring(1));
 				} else {
-					// empty the inputPhase
-					this.inputPhase = "";
+					this.candidates.push(this.inputPhase);
 				}
+                this.updateCanvas();
 			} else {
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
