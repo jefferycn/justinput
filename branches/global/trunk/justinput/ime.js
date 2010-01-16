@@ -383,7 +383,7 @@ IME.prototype = {
 		if (this.wb == true) {
 			query.push({
 						"q" : this.inputPinyin.reduce(),
-						"full" : "false"
+						"full" : "true"
 					});
 			table = "words";
 		} else {
@@ -413,7 +413,6 @@ IME.prototype = {
 						});
 			}
 		}
-		//Mojo.Log.info("initialize ======> " + table);
 		new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
