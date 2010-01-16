@@ -37,11 +37,11 @@ IME.prototype = {
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
 		this.toggleIme();
-		if (this.wb == false) {
+		if (this.wb === false) {
 			this.allPinyin = new PrefixMap(PinyingSource.table);
 		}
 		// initial canvas
-		if ($('canvas') == null) {
+		if ($('canvas') === null) {
 			var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
 			document.body.insert({
 						after : canvas
@@ -51,7 +51,7 @@ IME.prototype = {
 		$('board').hide();
 	},
 	inArray : function(v, array) {
-		if (Object.isArray(array) == false) {
+		if (Object.isArray(array) === false) {
 			return false;
 		}
 		for (var i = 0; i < array.length; i++) {
@@ -64,8 +64,8 @@ IME.prototype = {
 	getCursorPos : function() {
 		var a = this.text;
 		var b = 0;
-		if (a.selectionStart != undefined) {
-			b = a.selectionStart
+		if (a.selectionStart !== undefined) {
+			b = a.selectionStart;
 		} else {
 			var c;
 			if (a.tagName == "TEXTAREA") {
@@ -96,9 +96,9 @@ IME.prototype = {
 		if (a.tagName == "DIV") {
 			return false;
 		}
-		if (a.selectionStart != undefined) {
+		if (a.selectionStart !== undefined) {
 			a.selectionStart = n;
-			a.selectionEnd = n
+			a.selectionEnd = n;
 		} else {
 			var b = parseInt(n);
 			if (isNaN(b)) {
@@ -107,11 +107,11 @@ IME.prototype = {
 			var c = a.createTextRange();
 			c.moveStart("character", b);
 			c.collapse(true);
-			c.select()
+			c.select();
 		}
 	},
 	toggleIme : function() {
-		if (this.active == true) {
+		if (this.active === true) {
 			this.active = false;
 		} else {
 			this.active = true;
@@ -132,7 +132,7 @@ IME.prototype = {
 
 		handlerBox = {};
 
-		if (this.active == true) {
+		if (this.active === true) {
 			handlerBox.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
 			handlerBox.fxTextOnKeyPress = this.textOnKeyPress.bind(this);
 			handlerBox.fxTextOnFocus = this.textOnFocus.bind(this);
@@ -167,7 +167,7 @@ IME.prototype = {
 				handler.stopObserving('blur', this.stopObservingBlur, true);
 			}
 
-			if (this.active == true) {
+			if (this.active === true) {
 				handler.observe('keydown', handlerBox.fxTextOnKeyDown, true);
 				handler.observe('keypress', handlerBox.fxTextOnKeyPress, true);
 				handler.observe('focus', handlerBox.fxTextOnFocus, true);
@@ -184,7 +184,7 @@ IME.prototype = {
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
-		if (this.active == false) {
+		if (this.active === false) {
 			return true;
 		} else {
 			this.text = e.srcElement;
@@ -216,15 +216,14 @@ IME.prototype = {
 		}
 	},
 	textOnKeyPress : function(e) {
-		if (this.active == false) {
+		if (this.active === false) {
 			return true;
 		} else {
 			this.targetType = e.srcElement.tagName;
 			this.text = e.srcElement;
 		}
 		var key = e.keyCode;
-		if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65
-				&& key <= 90) {
+		if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 			if (key == this.spliterKey && this.hasCandidate === false) {
 				return String.fromCharCode(key);
 			}
@@ -233,7 +232,7 @@ IME.prototype = {
 				key += 32;
 			}
 			this.inputPhase += String.fromCharCode(key);
-			if (this.wb == true) {
+			if (this.wb === true) {
 				if (this.inputPhase.length > 4) {
 					this.inputPhase = this.inputPhase.substr(0, 4);
 					e.returnValue = false;
@@ -272,7 +271,7 @@ IME.prototype = {
 					} else {
 						// there is no cadidates, but the inputPhase is not
 						// empty, just push it out
-						if (this.wb == true) {
+						if (this.wb === true) {
 							this.candidates.push(this.inputPhase);
 							this.sendResult(this.inputPhase);
 						} else {
@@ -319,7 +318,7 @@ IME.prototype = {
 		}
 	},
 	formatPinyin : function() {
-		if (this.wb == true) {
+		if (this.wb === true) {
 			return [this.inputPhase];
 		}
 		var pinyins = [];
@@ -367,8 +366,7 @@ IME.prototype = {
 				var cur = this.getCursorPos();
 				var exist = this.text.value;
 				if (cur < exist.length) {
-					result = exist.substr(0, cur) + str
-							+ exist.substr(cur, exist.length);
+					result = exist.substr(0, cur) + str + exist.substr(cur, exist.length);
 				} else {
 					result = exist + str;
 				}
@@ -380,10 +378,11 @@ IME.prototype = {
 	update : function() {
 		this.inputPinyin = this.formatPinyin();
 		var query = [];
-		var table;
-		if (this.wb == true) {
-			var full;
-			var q = this.inputPinyin.reduce();
+        var q;
+        var full;
+        var table = "words";
+		if (this.wb === true) {
+			q = this.inputPinyin.reduce();
 			if(q.length > 2) {
 				full = "false";
 			}else {
@@ -393,9 +392,7 @@ IME.prototype = {
 						"q" : q,
 						"full" : full
 					});
-			table = "words";
 		} else {
-			table = "words";
 			var rest = this.inputPinyin;
 			var first;
 			if (rest.length > 6) {
@@ -406,8 +403,8 @@ IME.prototype = {
 			}
 
 			for (var i = 0; i < first.length; i++) {
-				var q = first[i];
-				var full = "true";
+				q = first[i];
+				full = "true";
 				if (q.length == 1 && !(q == 'a' || q == 'e' || q == 'o')) {
 					full = "false";
 				} else {
@@ -421,8 +418,8 @@ IME.prototype = {
 						});
 			}
 		}
-		//Mojo.Log.info("initialize ======> " + table);
-		new Mojo.Service.Request('palm://com.youjf.jisrv', {
+
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
 						query : query,
@@ -445,7 +442,7 @@ IME.prototype = {
 	getCandidates : function(response) {
 		this.ms = response.ms;
 		if (response.count > 0) {
-			if (this.wb == true && response.count == 1) {
+			if (this.wb === true && response.count === 1) {
 				this.sendResult(response.words.reduce());
 				this.hasCandidate = false;
 				this.selectedPinyin = [];

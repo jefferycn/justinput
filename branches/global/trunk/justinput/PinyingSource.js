@@ -14,9 +14,9 @@ var PinyingSource = {
 												i : ["zhuai", {}, 0]
 											}, 2]
 								}, 4],
-						o : [, {
+						o : ["zho", {
 									u : ["zhou", {}, 0],
-									n : [, {
+									n : ["zhon", {
 												g : ["zhong", {}, 0]
 											}, 1]
 								}, 2],
@@ -38,13 +38,13 @@ var PinyingSource = {
 						o : ["zuo", {}, 0],
 						n : ["zun", {}, 0],
 						i : ["zui", {}, 0],
-						a : [, {
+						a : ["zua", {
 									n : ["zuan", {}, 0]
 								}, 1]
 					}, 4],
-			o : [, {
+			o : ["zo", {
 						u : ["zou", {}, 0],
-						n : [, {
+						n : ["zon", {
 									g : ["zong", {}, 0]
 								}, 1]
 					}, 2],
@@ -67,13 +67,13 @@ var PinyingSource = {
 					u : ["yu", {
 								n : ["yun", {}, 0],
 								e : ["yue", {}, 0],
-								a : [, {
+								a : ["yua", {
 											n : ["yuan", {}, 0]
 										}, 1]
 							}, 3],
 					o : ["yo", {
 								u : ["you", {}, 0],
-								n : [, {
+								n : ["yon", {
 											g : ["yong", {}, 0]
 										}, 1]
 							}, 2],
@@ -94,14 +94,14 @@ var PinyingSource = {
 					u : ["xu", {
 								n : ["xun", {}, 0],
 								e : ["xue", {}, 0],
-								a : [, {
+								a : ["xua", {
 											n : ["xuan", {}, 0]
 										}, 1]
 							}, 3],
 					i : ["xi", {
 								u : ["xiu", {}, 0],
-								o : [, {
-											n : [, {
+								o : ["xio", {
+											n : ["xion", {
 														g : ["xiong", {}, 0]
 													}, 1]
 										}, 1],
@@ -120,7 +120,7 @@ var PinyingSource = {
 		w : ["w", {
 					u : ["wu", {}, 0],
 					o : ["wo", {}, 0],
-					e : [, {
+					e : ["we", {
 								n : ["wen", {
 											g : ["weng", {}, 0]
 										}, 1],
@@ -138,28 +138,28 @@ var PinyingSource = {
 								o : ["tuo", {}, 0],
 								n : ["tun", {}, 0],
 								i : ["tui", {}, 0],
-								a : [, {
+								a : ["tua", {
 											n : ["tuan", {}, 0]
 										}, 1]
 							}, 4],
-					o : [, {
+					o : ["to", {
 								u : ["tou", {}, 0],
-								n : [, {
+								n : ["ton", {
 											g : ["tong", {}, 0]
 										}, 1]
 							}, 2],
 					i : ["ti", {
-								n : [, {
+								n : ["tin", {
 											g : ["ting", {}, 0]
 										}, 1],
 								e : ["tie", {}, 0],
-								a : [, {
+								a : ["tia", {
 											o : ["tiao", {}, 0],
 											n : ["tian", {}, 0]
 										}, 2]
 							}, 3],
 					e : ["te", {
-								n : [, {
+								n : ["ten", {
 											g : ["teng", {}, 0]
 										}, 1]
 							}, 1],
@@ -185,7 +185,7 @@ var PinyingSource = {
 												i : ["shuai", {}, 0]
 											}, 2]
 								}, 4],
-						o : [, {
+						o : ["sho", {
 									u : ["shou", {}, 0]
 								}, 1],
 						i : ["shi", {}, 0],
@@ -206,13 +206,13 @@ var PinyingSource = {
 						o : ["suo", {}, 0],
 						n : ["sun", {}, 0],
 						i : ["sui", {}, 0],
-						a : [, {
+						a : ["sua", {
 									n : ["suan", {}, 0]
 								}, 1]
 					}, 4],
-			o : [, {
+			o : ["so", {
 						u : ["sou", {}, 0],
-						n : [, {
+						n : ["son", {
 									g : ["song", {}, 0]
 								}, 1]
 					}, 2],
@@ -235,13 +235,13 @@ var PinyingSource = {
 								o : ["ruo", {}, 0],
 								n : ["run", {}, 0],
 								i : ["rui", {}, 0],
-								a : [, {
+								a : ["rua", {
 											n : ["ruan", {}, 0]
 										}, 1]
 							}, 4],
-					o : [, {
+					o : ["ro", {
 								u : ["rou", {}, 0],
-								n : [, {
+								n : ["ron", {
 											g : ["rong", {}, 0]
 										}, 1]
 							}, 2],
@@ -251,7 +251,7 @@ var PinyingSource = {
 											g : ["reng", {}, 0]
 										}, 1]
 							}, 1],
-					a : [, {
+					a : ["ra", {
 								o : ["rao", {}, 0],
 								n : ["ran", {
 											g : ["rang", {}, 0]
@@ -262,14 +262,14 @@ var PinyingSource = {
 					u : ["qu", {
 								n : ["qun", {}, 0],
 								e : ["que", {}, 0],
-								a : [, {
+								a : ["qua", {
 											n : ["quan", {}, 0]
 										}, 1]
 							}, 3],
 					i : ["qi", {
 								u : ["qiu", {}, 0],
-								o : [, {
-											n : [, {
+								o : ["qio", {
+											n : ["qion", {
 														g : ["qiong", {}, 0]
 													}, 1]
 										}, 1],
@@ -293,12 +293,12 @@ var PinyingSource = {
 											g : ["ping", {}, 0]
 										}, 1],
 								e : ["pie", {}, 0],
-								a : [, {
+								a : ["pia", {
 											o : ["piao", {}, 0],
 											n : ["pian", {}, 0]
 										}, 2]
 							}, 3],
-					e : [, {
+					e : ["pe", {
 								n : ["pen", {
 											g : ["peng", {}, 0]
 										}, 1],
@@ -316,13 +316,13 @@ var PinyingSource = {
 					u : ["nu", {
 								o : ["nuo", {}, 0],
 								e : ["nue", {}, 0],
-								a : [, {
+								a : ["nua", {
 											n : ["nuan", {}, 0]
 										}, 1]
 							}, 3],
 					v : ["nv", {}, 0],
-					o : [, {
-								n : [, {
+					o : ["no", {
+								n : ["non", {
 											g : ["nong", {}, 0]
 										}, 1]
 							}, 1],
@@ -332,7 +332,7 @@ var PinyingSource = {
 											g : ["ning", {}, 0]
 										}, 1],
 								e : ["nie", {}, 0],
-								a : [, {
+								a : ["nia", {
 											o : ["niao", {}, 0],
 											n : ["nian", {
 														g : ["niang", {}, 0]
@@ -364,7 +364,7 @@ var PinyingSource = {
 											g : ["ming", {}, 0]
 										}, 1],
 								e : ["mie", {}, 0],
-								a : [, {
+								a : ["mia", {
 											o : ["miao", {}, 0],
 											n : ["mian", {}, 0]
 										}, 2]
@@ -388,14 +388,14 @@ var PinyingSource = {
 								o : ["luo", {}, 0],
 								n : ["lun", {}, 0],
 								e : ["lue", {}, 0],
-								a : [, {
+								a : ["lua", {
 											n : ["luan", {}, 0]
 										}, 1]
 							}, 4],
 					v : ["lv", {}, 0],
-					o : [, {
+					o : ["lo", {
 								u : ["lou", {}, 0],
-								n : [, {
+								n : ["lon", {
 											g : ["long", {}, 0]
 										}, 1]
 							}, 2],
@@ -405,7 +405,7 @@ var PinyingSource = {
 											g : ["ling", {}, 0]
 										}, 1],
 								e : ["lie", {}, 0],
-								a : [, {
+								a : ["lia", {
 											o : ["liao", {}, 0],
 											n : ["lian", {
 														g : ["liang", {}, 0]
@@ -413,7 +413,7 @@ var PinyingSource = {
 										}, 2]
 							}, 4],
 					e : ["le", {
-								n : [, {
+								n : ["len", {
 											g : ["leng", {}, 0]
 										}, 1],
 								i : ["lei", {}, 0]
@@ -438,9 +438,9 @@ var PinyingSource = {
 											i : ["kuai", {}, 0]
 										}, 2]
 							}, 4],
-					o : [, {
+					o : ["ko", {
 								u : ["kou", {}, 0],
-								n : [, {
+								n : ["kon", {
 											g : ["kong", {}, 0]
 										}, 1]
 							}, 2],
@@ -461,14 +461,14 @@ var PinyingSource = {
 					u : ["ju", {
 								n : ["jun", {}, 0],
 								e : ["jue", {}, 0],
-								a : [, {
+								a : ["jua", {
 											n : ["juan", {}, 0]
 										}, 1]
 							}, 3],
 					i : ["ji", {
 								u : ["jiu", {}, 0],
-								o : [, {
-											n : [, {
+								o : ["jio", {
+											n : ["jion", {
 														g : ["jiong", {}, 0]
 													}, 1]
 										}, 1],
@@ -496,9 +496,9 @@ var PinyingSource = {
 											i : ["huai", {}, 0]
 										}, 2]
 							}, 4],
-					o : [, {
+					o : ["ho", {
 								u : ["hou", {}, 0],
-								n : [, {
+								n : ["hon", {
 											g : ["hong", {}, 0]
 										}, 1]
 							}, 2],
@@ -528,9 +528,9 @@ var PinyingSource = {
 											i : ["guai", {}, 0]
 										}, 2]
 							}, 4],
-					o : [, {
+					o : ["go", {
 								u : ["gou", {}, 0],
-								n : [, {
+								n : ["gon", {
 											g : ["gong", {}, 0]
 										}, 1]
 							}, 2],
@@ -553,7 +553,7 @@ var PinyingSource = {
 					o : ["fo", {
 								u : ["fou", {}, 0]
 							}, 1],
-					e : [, {
+					e : ["fe", {
 								n : ["fen", {
 											g : ["feng", {}, 0]
 										}, 1],
@@ -570,29 +570,29 @@ var PinyingSource = {
 								o : ["duo", {}, 0],
 								n : ["dun", {}, 0],
 								i : ["dui", {}, 0],
-								a : [, {
+								a : ["dua", {
 											n : ["duan", {}, 0]
 										}, 1]
 							}, 4],
-					o : [, {
+					o : ["do", {
 								u : ["dou", {}, 0],
-								n : [, {
+								n : ["don", {
 											g : ["dong", {}, 0]
 										}, 1]
 							}, 2],
 					i : ["di", {
 								u : ["diu", {}, 0],
-								n : [, {
+								n : ["din", {
 											g : ["ding", {}, 0]
 										}, 1],
 								e : ["die", {}, 0],
-								a : [, {
+								a : ["dia", {
 											o : ["diao", {}, 0],
 											n : ["dian", {}, 0]
 										}, 2]
 							}, 4],
 					e : ["de", {
-								n : [, {
+								n : ["den", {
 											g : ["deng", {}, 0]
 										}, 1]
 							}, 1],
@@ -610,7 +610,7 @@ var PinyingSource = {
 									o : ["chuo", {}, 0],
 									n : ["chun", {}, 0],
 									i : ["chui", {}, 0],
-									a : [, {
+									a : ["chua", {
 												n : ["chuan", {
 															g : ["chuang", {},
 																	0]
@@ -618,9 +618,9 @@ var PinyingSource = {
 												i : ["chuai", {}, 0]
 											}, 2]
 								}, 4],
-						o : [, {
+						o : ["cho", {
 									u : ["chou", {}, 0],
-									n : [, {
+									n : ["chon", {
 												g : ["chong", {}, 0]
 											}, 1]
 								}, 2],
@@ -642,19 +642,19 @@ var PinyingSource = {
 						o : ["cuo", {}, 0],
 						n : ["cun", {}, 0],
 						i : ["cui", {}, 0],
-						a : [, {
+						a : ["cua", {
 									n : ["cuan", {}, 0]
 								}, 1]
 					}, 4],
-			o : [, {
+			o : ["co", {
 						u : ["cou", {}, 0],
-						n : [, {
+						n : ["con", {
 									g : ["cong", {}, 0]
 								}, 1]
 					}, 2],
 			i : ["ci", {}, 0],
 			e : ["ce", {
-						n : [, {
+						n : ["cen", {
 									g : ["ceng", {}, 0]
 								}, 1]
 					}, 1],
@@ -674,12 +674,12 @@ var PinyingSource = {
 											g : ["bing", {}, 0]
 										}, 1],
 								e : ["bie", {}, 0],
-								a : [, {
+								a : ["bia", {
 											o : ["biao", {}, 0],
 											n : ["bian", {}, 0]
 										}, 2]
 							}, 3],
-					e : [, {
+					e : ["be", {
 								n : ["ben", {
 											g : ["beng", {}, 0]
 										}, 1],
