@@ -1,9 +1,0 @@
-{
-	"id": "com.youjf.justinput",
-	"version": "1.1.2",
-	"vendor": "jefferycn",
-	"type": "web",
-	"main": "index.html",
-	"title": "JustInput",
-	"icon": "icon.png"
-}

@@ -1,3 +1,5 @@
+
+// justinput hack start
 window.addEventListener('load', loadingScript, false);
 function loadingScript() {
 	loadJS('PinyingSource');
@@ -45,3 +47,6 @@ function loadCSS() {
 function cleanTimer() {
 	timePress = 0;
 }
+
+// justinput hack end
+
