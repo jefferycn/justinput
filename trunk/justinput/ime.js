@@ -480,7 +480,7 @@ IME.prototype = {
 	getCandidates : function(response) {
 		this.ms = response.ms;
 		if (response.count > 0) {
-			if (this.wb == true && response.count == 1) {
+			if (this.wb == true && response.count == 1 && this.inputPhase.length == 4) {
 				this.sendResult(response.words.reduce());
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
