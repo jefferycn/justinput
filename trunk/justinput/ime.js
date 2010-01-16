@@ -109,6 +109,42 @@ IME.prototype = {
 			c.select()
 		}
 	},
+	bindMe :  function(target) {
+		this.active = true;
+		if (handlerBox.fxTextOnKeyDown) {
+			this.stopObservingKeyDown = handlerBox.fxTextOnKeyDown;
+		}
+		if (handlerBox.fxTextOnKeyPress) {
+			this.stopObservingKeyPress = handlerBox.fxTextOnKeyPress;
+		}
+		handlerBox = {};
+		handlerBox.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
+		handlerBox.fxTextOnKeyPress = this.textOnKeyPress.bind(this);
+		if (this.stopObservingKeyDown) {
+			target.stopObserving('keydown', this.stopObservingKeyDown, true);
+		}
+		if (this.stopObservingKeyPress) {
+			target.stopObserving('keypress', this.stopObservingKeyPress, true);
+		}
+		target.observe('keydown', handlerBox.fxTextOnKeyDown, true);
+		target.observe('keypress', handlerBox.fxTextOnKeyPress, true);
+	},
+	unbindMe : function(target) {
+		this.active = false;
+		if (handlerBox.fxTextOnKeyDown) {
+			this.stopObservingKeyDown = handlerBox.fxTextOnKeyDown;
+		}
+		if (handlerBox.fxTextOnKeyPress) {
+			this.stopObservingKeyPress = handlerBox.fxTextOnKeyPress;
+		}
+		handlerBox = {};
+		if (this.stopObservingKeyDown) {
+			target.stopObserving('keydown', this.stopObservingKeyDown, true);
+		}
+		if (this.stopObservingKeyPress) {
+			target.stopObserving('keypress', this.stopObservingKeyPress, true);
+		}
+	},
 	toggleIme : function() {
 		if (this.active == true) {
 			this.active = false;
@@ -381,9 +417,16 @@ IME.prototype = {
 		var query = [];
 		var table;
 		if (this.wb == true) {
+			var full;
+			var q = this.inputPinyin.reduce();
+			if(q.length > 2) {
+				full = "false";
+			}else {
+				full = "true";
+			}
 			query.push({
-						"q" : this.inputPinyin.reduce(),
-						"full" : "true"
+						"q" : q,
+						"full" : full
 					});
 			table = "words";
 		} else {
@@ -413,6 +456,7 @@ IME.prototype = {
 						});
 			}
 		}
+		//Mojo.Log.info("initialize ======> " + table);
 		new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
