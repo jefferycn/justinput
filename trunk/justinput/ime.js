@@ -16,7 +16,7 @@ IME.prototype = {
 	spaceKey : 32,
     // alt key : 129/altKey=true  shift key : 16/shiftKey=true
 	selectingKeys : [32, 64, 46],
-	// selectingKeys : [32, 49, 50],
+	holdInput : false,
 	inputPhase : "",
 	inputPinyin : [],
 	selectedPinyin : [],
@@ -36,19 +36,29 @@ IME.prototype = {
 		this.selected = [];
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
-		this.toggleIme();
 		if (this.wb === false) {
 			this.allPinyin = new PrefixMap(PinyingSource.table);
 		}
 		// initial canvas
 		if ($('canvas') === null) {
-			var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
+			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
+			var canvas = '<div class="justinputCanvas" id="status"><img id="statusCN" src="/usr/palm/frameworks/mojo/justinput/cn3.gif" /><img id="statusEN" src="/usr/palm/frameworks/mojo/justinput/en3.gif" /></div><div class="justinputCanvas" id="canvas"><ul><li id="board"</li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div>';
 			document.body.insert({
 						after : canvas
 					});
 			this.setPosition();
+			$('status').observe('click', this.toggleIme.bind(this), true);
 		}
-		$('board').hide();
+		
+		$('status').setStyle({
+					top : "30px",
+					left : "30px"
+				});
+		Drag.init($("status"));
+		$('statusEN').hide();
+		$('statusCN').hide();
+		$('canvas').hide();
+		this.toggleIme();
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) === false) {
@@ -112,8 +122,12 @@ IME.prototype = {
 	},
 	toggleIme : function() {
 		if (this.active === true) {
+			$('statusEN').show();
+			$('statusCN').hide();
 			this.active = false;
 		} else {
+			$('statusEN').hide();
+			$('statusCN').show();
 			this.active = true;
 		}
 
@@ -184,6 +198,10 @@ IME.prototype = {
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
+		if(this.holdInput) {
+			e.returnValue = false;
+			return false;
+		}
 		if (this.active === false) {
 			return true;
 		} else {
@@ -213,9 +231,19 @@ IME.prototype = {
 				}
 			}
 			return false;
+		}else if(e.keyCode == 13 && this.inputPhase.length > 0) {
+			this.getCandidatesFalse();
+			this.sendResult(this.inputPhase);
+			this.inputPhase = "";
+			e.returnValue = false;
+			return false;
 		}
 	},
 	textOnKeyPress : function(e) {
+		if(this.holdInput) {
+			e.returnValue = false;
+			return false;
+		}
 		if (this.active === false) {
 			return true;
 		} else {
@@ -223,6 +251,7 @@ IME.prototype = {
 			this.text = e.srcElement;
 		}
 		var key = e.keyCode;
+		var seqMap = [3, 1, 0, 2, 4];
 		if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 			if (key == this.spliterKey && this.hasCandidate === false) {
 				return String.fromCharCode(key);
@@ -234,7 +263,11 @@ IME.prototype = {
 			this.inputPhase += String.fromCharCode(key);
 			if (this.wb === true) {
 				if (this.inputPhase.length > 4) {
-					this.inputPhase = this.inputPhase.substr(0, 4);
+					// send the active word
+					this.phaseSelected(seqMap[this.activeCandidateIndex]);
+					this.getCandidatesFalse();
+					this.inputPhase = String.fromCharCode(key);
+					this.update();
 					e.returnValue = false;
 					return false;
 				}
@@ -245,10 +278,8 @@ IME.prototype = {
 				// choose from select list
 				if (this.inputPhase.length > 0) {
 					if (this.hasCandidate) {
-						var seqMap = [3, 1, 0, 2, 4];
 						if (key === this.selectingKeys[0]) {
-							this
-									.phaseSelected(seqMap[this.activeCandidateIndex]);
+							this.phaseSelected(seqMap[this.activeCandidateIndex]);
 						}
 						var candidatesLength = this.candidates.length;
 						if (key === this.selectingKeys[1]) {
@@ -271,17 +302,25 @@ IME.prototype = {
 					} else {
 						// there is no cadidates, but the inputPhase is not
 						// empty, just push it out
-						if (this.wb === true) {
-							this.candidates.push(this.inputPhase);
-							this.sendResult(this.inputPhase);
+						if(this.inputPhase == "ustudy") {
+							this.toggleStudyMode();
+							this.getCandidatesFalse();
+							this.inputPhase = "";
+							e.returnValue = false;
+							return false;
 						} else {
-							this.candidates.push(this.inputPhase.substring(1));
-							this.sendResult(this.inputPhase.substring(1));
+							if (this.wb === true) {
+								this.candidates.push(this.inputPhase);
+								this.sendResult(this.inputPhase);
+							} else {
+								this.candidates.push(this.inputPhase.substring(1));
+								this.sendResult(this.inputPhase.substring(1));
+							}
+							this.inputPhase = '';
+							this.offset = 0;
+							this.activeCandidateIndex = 2;
+							this.update();
 						}
-						this.inputPhase = '';
-						this.offset = 0;
-						this.activeCandidateIndex = 2;
-						this.update();
 					}
 				} else {
 					return String.fromCharCode(key);
@@ -375,6 +414,34 @@ IME.prototype = {
 				break;
 		}
 	},
+	toggleStudyMode : function() {
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'toggleStudyMode',
+					parameters : {}
+				});
+	},
+	updateRank : function() {
+		var selected = this.selected;
+		if(selected.length < 1) {
+			return false;
+		}
+		var pinyin = this.selectedPinyin;
+		var query = [];
+		var item = {};
+		var wordLength;
+		for(var i = 0;i < selected.length;i ++) {
+			item = {};
+			item.q = selected[i];
+			item.k = pinyin.splice(0, selected[i].length);
+			query.push(item);
+		}
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'put',
+					parameters : {
+						query : query
+					}
+				});
+	},
 	update : function() {
 		this.inputPinyin = this.formatPinyin();
 		var query = [];
@@ -418,7 +485,8 @@ IME.prototype = {
 						});
 			}
 		}
-
+		
+		this.holdInput = true;
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
@@ -430,27 +498,31 @@ IME.prototype = {
 					onFailure : this.getCandidatesFalse.bind(this)
 				});
 	},
-	getCandidatesFalse : function(r) {
+	getCandidatesFalse : function() {
+		this.holdInput = false;
+		this.sendResult(this.selected.join(''));
+		this.updateRank();
 		this.hasCandidate = false;
 		this.selectedPinyin = [];
-		this.sendResult(this.selected.join(''));
 		this.selected = [];
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
-		$('board').hide();
+		$('canvas').hide();
 	},
 	getCandidates : function(response) {
+		this.holdInput = false;
 		this.ms = response.ms;
 		if (response.count > 0) {
-			if (this.wb === true && response.count === 1) {
+			if (this.wb === true && response.count == "1") {
 				this.sendResult(response.words.reduce());
+				this.updateRank();
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
 				this.selected = [];
 				this.offset = 0;
 				this.activeCandidateIndex = 2;
 				this.inputPhase = "";
-				$('board').hide();
+				$('canvas').hide();
 			} else {
 				this.candidates = response.words;
 				this.candidatesNum = response.count;
@@ -475,7 +547,7 @@ IME.prototype = {
 				this.selected = [];
 				this.offset = 0;
 				this.activeCandidateIndex = 2;
-				$('board').hide();
+				$('canvas').hide();
 			}
 		}
 	},
@@ -516,29 +588,21 @@ IME.prototype = {
 			workspace = this.selected.join('') + this.inputPinyin.join("'");
 		}
 		var candidates = this.sortArray();
-		$('workspace').update(workspace);
+		$('board').update(workspace);
 		var list = $('candidate').childElements();
 		for (var i = 0; i < list.length; i++) {
-			list[i].update(candidates[i]);
+			list[i].update("<a>" + candidates[i] + "</a>");
 			if (i == this.activeCandidateIndex) {
-				list[i].setStyle({
-							"background-color" : "#DBF3FF",
-							"border-width" : "1px",
-							"border-style" : "solid",
-							"border-color" : "#85CCFF"
-						});
-			} else {
-				list[i].setStyle({
-							"background-color" : "",
-							"border-width" : "",
-							"border-style" : "",
-							"border-color" : ""
-						});
+				list[i].addClassName("tabSelect");
+			}else {
+				list[i].removeClassName("tabSelect");
 			}
 		}
 		// $('ms').update(this.ms);
 		this.setPosition();
-		$('board').show();
+		this.setPosition();
+		this.setPosition();
+		$('canvas').show();
 	},
 	setPosition : function() {
 		var top;
@@ -552,7 +616,6 @@ IME.prototype = {
 		var HI_PADDING_BOTTOM = 20;
 		var HI_PADDING_LEFT = 20;
 		var HI_PADDING_RIGHT = 20;
-		var HI_COLUMNS = 5;
 		var HI_MINIMUM_TOP = 10;
 		var HI_MAX_BOTTOM = 5;
 
@@ -560,7 +623,7 @@ IME.prototype = {
 			targetLeft = 0;
 			viewDims = document.viewport.getDimensions();
 
-			pickerDims = $('board').getDimensions();
+			pickerDims = $('canvas').getDimensions();
 
 			if ((pickerDims.height + HI_PADDING_BOTTOM + cursorPos.y) > viewDims.height) {
 				top = cursorPos.y - (pickerDims.height + HI_PADDING_TOP);
@@ -579,10 +642,8 @@ IME.prototype = {
 			minWidth = targetLeft + HI_PADDING_LEFT;
 
 			if ((pickerDims.width + cursorPos.x) > maxWidth) {
-
 				left = maxWidth - pickerDims.width;
 			} else if ((cursorPos.x - pickerDims.width) < minWidth) {
-
 				left = minWidth;
 			}
 
@@ -592,7 +653,7 @@ IME.prototype = {
 			left = '0px';
 			top = '0px';
 		}
-		$('board').setStyle({
+		$('canvas').setStyle({
 					top : top,
 					left : left
 				});
