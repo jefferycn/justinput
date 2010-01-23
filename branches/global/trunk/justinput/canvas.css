@@ -1,47 +1,44 @@
 .justinputCanvas {
     position: absolute;
 	height: 37px;
-	font-size: 16px;
     color: #333;
-	text-decoration: none;
-	z-index: 133500;
-}
-
-.justinputCanvas a {
-	font-size: 16px;
-    color: #333;
-	text-decoration: none;
+    text-decoration: none;
+    -webkit-border-image: url(/usr/palm/frameworks/mojo/justinput/palm-popup-background.png) 24 24 24 24 repeat repeat;
+    -webkit-box-sizing: border-box;
+    border-width: 24px;
+    height: 72px;
+    min-width: 170px;
 }
 
 .justinputCanvas ul, .justinputCanvas li {
 	margin: 0px;
-	padding: 0px;
-	list-style: none;
+	padding: 0px 6px;
+    list-style: none;
+    font-weight: bold;
+    -webkit-box-sizing: content-box;
 }
 
-#board {
-    padding: 0px 11px;
-    text-align: left;
+.justinputCanvas .contentWrap {
+    margin-left: -10px;
+    margin-right: -10px;
+    margin-top: -13px;
 }
 
-.tabWrapTop {
+.justinputCanvas .boardWrap li {
+    border-bottom: 1px solid rgb(153, 153, 153);
+}
+
+.justinputCanvas .tabWrapTop {
     text-align: center;
 	float: left;
-	line-height: 37px;
-	background: url(/usr/palm/frameworks/mojo/justinput/navBg.jpg) repeat-x;
-}
-.tabUnselect, .tabSelect, .tabSelectLeft, .tabSelectRight {
-	float: left;
-	height: 37px;
-}
-.tabUnselect a {
-	float: left;
-	height: 37px;
-	padding: 0px 11px;
-	background: url(/usr/palm/frameworks/mojo/justinput/navSpliteLine.jpg) right top no-repeat;
+	line-height: 30px;
 }
 
-.tabSelect a {
-	color: #FFF;
-	background: url(/usr/palm/frameworks/mojo/justinput/navBgHover.jpg);
+.justinputCanvas .tabUnselect {
+	float: left;
+	height: 37px;
+}
+
+.justinputCanvas .tabSelect {
+    color: rgb(31, 117, 191);
 }

@@ -42,21 +42,17 @@ IME.prototype = {
 		// initial canvas
 		if ($('canvas') === null) {
 			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
-			var canvas = '<div class="justinputCanvas" id="status"><img id="statusCN" src="/usr/palm/frameworks/mojo/justinput/cn3.gif" /><img id="statusEN" src="/usr/palm/frameworks/mojo/justinput/en3.gif" /></div><div class="justinputCanvas" id="canvas"><ul><li id="board"</li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div>';
+			var canvas = '<div class="justinputCanvas" id="canvas"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
 			document.body.insert({
 						after : canvas
 					});
-			this.setPosition();
-			$('status').observe('click', this.toggleIme.bind(this), true);
+			//$('status').observe('click', this.toggleIme.bind(this), true);
 		}
 		
-		$('status').setStyle({
-					top : "30px",
-					left : "30px"
-				});
-		Drag.init($("status"));
-		$('statusEN').hide();
-		$('statusCN').hide();
+		//$('status').setStyle({top : "30px",left : "30px"});
+		//Drag.init($("status"));
+		//$('statusEN').hide();
+		//$('statusCN').hide();
 		$('canvas').hide();
 		this.toggleIme();
 	},
@@ -122,12 +118,12 @@ IME.prototype = {
 	},
 	toggleIme : function() {
 		if (this.active === true) {
-			$('statusEN').show();
-			$('statusCN').hide();
+			//$('statusEN').show();
+			//$('statusCN').hide();
 			this.active = false;
 		} else {
-			$('statusEN').hide();
-			$('statusCN').show();
+			//$('statusEN').hide();
+			//$('statusCN').show();
 			this.active = true;
 		}
 
@@ -590,17 +586,23 @@ IME.prototype = {
 		var candidates = this.sortArray();
 		$('board').update(workspace);
 		var list = $('candidate').childElements();
+		var wordLength = 0;
 		for (var i = 0; i < list.length; i++) {
-			list[i].update("<a>" + candidates[i] + "</a>");
-			if (i == this.activeCandidateIndex) {
+			list[i].update(candidates[i]);
+			wordLength += candidates[i].length;
+			if(i == this.activeCandidateIndex) {
 				list[i].addClassName("tabSelect");
 			}else {
 				list[i].removeClassName("tabSelect");
 			}
 		}
+		if(wordLength > 5)	{
+			var minLength = 170 + (wordLength - 5) * 14;
+			$('canvas').setStyle({"min-width" : minLength + "px"});
+		}else {
+			$('canvas').setStyle({"min-width" : "170px"});
+		}
 		// $('ms').update(this.ms);
-		this.setPosition();
-		this.setPosition();
 		this.setPosition();
 		$('canvas').show();
 	},
@@ -608,19 +610,17 @@ IME.prototype = {
 		var top;
 		var left;
 		var cursorPos = window.caretRect();
-		var targetLeft;
 		var pickerDims;
 		var viewDims;
 		var maxWidth, minWidth;
-		var HI_PADDING_TOP = 20;
-		var HI_PADDING_BOTTOM = 20;
-		var HI_PADDING_LEFT = 20;
-		var HI_PADDING_RIGHT = 20;
+		var HI_PADDING_TOP = 5;
+		var HI_PADDING_BOTTOM = 10;
+		var HI_PADDING_LEFT = 10;
+		var HI_PADDING_RIGHT = 10;
 		var HI_MINIMUM_TOP = 10;
 		var HI_MAX_BOTTOM = 5;
 
 		if (cursorPos) {
-			targetLeft = 0;
 			viewDims = document.viewport.getDimensions();
 
 			pickerDims = $('canvas').getDimensions();
@@ -639,8 +639,12 @@ IME.prototype = {
 
 			left = cursorPos.x;
 			maxWidth = viewDims.width - HI_PADDING_RIGHT;
-			minWidth = targetLeft + HI_PADDING_LEFT;
+			minWidth = HI_PADDING_LEFT;
 
+			if(pickerDims.width < 170) {
+				// can't get the correct dimension with, hack here
+				pickerDims.width = 170;
+			}
 			if ((pickerDims.width + cursorPos.x) > maxWidth) {
 				left = maxWidth - pickerDims.width;
 			} else if ((cursorPos.x - pickerDims.width) < minWidth) {
