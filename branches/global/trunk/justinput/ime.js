@@ -614,10 +614,10 @@ IME.prototype = {
 		var viewDims;
 		var maxWidth, minWidth;
 		var HI_PADDING_TOP = 5;
-		var HI_PADDING_BOTTOM = 10;
+		var HI_PADDING_BOTTOM = 20;
 		var HI_PADDING_LEFT = 10;
 		var HI_PADDING_RIGHT = 10;
-		var HI_MINIMUM_TOP = 10;
+		var HI_MINIMUM_TOP = 20;
 		var HI_MAX_BOTTOM = 5;
 
 		if (cursorPos) {
@@ -625,8 +625,13 @@ IME.prototype = {
 
 			pickerDims = $('canvas').getDimensions();
 
+			if(pickerDims.height < 72) {
+				// can't get the correct dimension height, hack here
+				pickerDims.height = 72;
+			}
+			
 			if ((pickerDims.height + HI_PADDING_BOTTOM + cursorPos.y) > viewDims.height) {
-				top = cursorPos.y - (pickerDims.height + HI_PADDING_TOP);
+				top = cursorPos.y - (pickerDims.height + HI_PADDING_BOTTOM);
 				if (top < HI_MINIMUM_TOP) {
 					top = HI_MINIMUM_TOP;
 				}
@@ -642,7 +647,7 @@ IME.prototype = {
 			minWidth = HI_PADDING_LEFT;
 
 			if(pickerDims.width < 170) {
-				// can't get the correct dimension with, hack here
+				// can't get the correct dimension width, hack here
 				pickerDims.width = 170;
 			}
 			if ((pickerDims.width + cursorPos.x) > maxWidth) {
