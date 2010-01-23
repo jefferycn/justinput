@@ -1,45 +1,45 @@
 .justinputCanvas {
-    position: absolute;
-	height: 37px;
-    color: #333;
-    text-decoration: none;
-    -webkit-border-image: url(/usr/palm/frameworks/mojo/justinput/palm-popup-background.png) 24 24 24 24 repeat repeat;
-    -webkit-box-sizing: border-box;
-    border-width: 24px;
-    height: 72px;
-    min-width: 170px;
+position: absolute;
+height: 37px;
+color: #333;
+text-decoration: none;
+-webkit-border-image: url(/usr/palm/frameworks/mojo/justinput/palm-popup-background.png) 24 24 24 24 repeat repeat;
+-webkit-box-sizing: border-box;
+border-width: 24px;
+height: 72px;
+min-width: 170px;
 }
 
 .justinputCanvas ul, .justinputCanvas li {
-	margin: 0px;
-	padding: 0px 6px;
-    list-style: none;
-    font-size: 16px;
-    font-weight: bold;
-    -webkit-box-sizing: content-box;
+margin: 0px;
+padding: 0px 6px;
+list-style: none;
+font-size: 16px;
+font-weight: bold;
+-webkit-box-sizing: content-box;
 }
 
 .justinputCanvas .contentWrap {
-    margin-left: -10px;
-    margin-right: -10px;
-    margin-top: -13px;
+margin-left: -10px;
+margin-right: -10px;
+margin-top: -13px;
 }
 
 .justinputCanvas .boardWrap li {
-    border-bottom: 1px solid rgb(153, 153, 153);
+border-bottom: 1px solid rgb(153, 153, 153);
 }
 
 .justinputCanvas .tabWrapTop {
-    text-align: center;
-	float: left;
-	line-height: 30px;
+text-align: center;
+float: left;
+line-height: 30px;
 }
 
 .justinputCanvas .tabUnselect {
-	float: left;
-	height: 37px;
+float: left;
+height: 37px;
 }
 
 .justinputCanvas .tabSelect {
-    color: rgb(31, 117, 191);
+color: rgb(31, 117, 191);
 }

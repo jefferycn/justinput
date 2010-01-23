@@ -194,10 +194,6 @@ IME.prototype = {
 		this.active = false;
 	},
 	textOnKeyDown : function(e) {
-		if(this.holdInput) {
-			e.returnValue = false;
-			return false;
-		}
 		if (this.active === false) {
 			return true;
 		} else {
@@ -236,10 +232,6 @@ IME.prototype = {
 		}
 	},
 	textOnKeyPress : function(e) {
-		if(this.holdInput) {
-			e.returnValue = false;
-			return false;
-		}
 		if (this.active === false) {
 			return true;
 		} else {
@@ -273,6 +265,10 @@ IME.prototype = {
 			if (this.inArray(key, this.selectingKeys)) {
 				// choose from select list
 				if (this.inputPhase.length > 0) {
+					if (this.holdInput) {
+						e.returnValue = false;
+						return false;
+					}
 					if (this.hasCandidate) {
 						if (key === this.selectingKeys[0]) {
 							this.phaseSelected(seqMap[this.activeCandidateIndex]);
