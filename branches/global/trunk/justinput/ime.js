@@ -597,7 +597,7 @@ IME.prototype = {
 			}
 		}
 		if(wordLength > 5)	{
-			var minLength = 170 + (wordLength - 5) * 14;
+			var minLength = 170 + (wordLength - 5) * 16;
 			$('canvas').setStyle({"min-width" : minLength + "px"});
 		}else {
 			$('canvas').setStyle({"min-width" : "170px"});
