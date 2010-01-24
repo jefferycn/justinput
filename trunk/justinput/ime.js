@@ -42,7 +42,7 @@ IME.prototype = {
 		// initial canvas
 		if ($('canvas') === null) {
 			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
-			var canvas = '<div class="justinputCanvas" id="canvas"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
+			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
 			document.body.insert({
 						after : canvas
 					});
@@ -248,9 +248,8 @@ IME.prototype = {
 				// force uppercase to lower case
 				key += 32;
 			}
-			this.inputPhase += String.fromCharCode(key);
 			if (this.wb === true) {
-				if (this.inputPhase.length > 4) {
+				if (this.inputPhase.length >= 4) {
 					// send the active word
 					this.phaseSelected(seqMap[this.activeCandidateIndex]);
 					this.getCandidatesFalse();
@@ -258,7 +257,11 @@ IME.prototype = {
 					this.update();
 					e.returnValue = false;
 					return false;
+				}else {
+					this.inputPhase += String.fromCharCode(key);
 				}
+			}else {
+				this.inputPhase += String.fromCharCode(key);
 			}
 			this.update();
 		} else {
@@ -272,6 +275,9 @@ IME.prototype = {
 					if (this.hasCandidate) {
 						if (key === this.selectingKeys[0]) {
 							this.phaseSelected(seqMap[this.activeCandidateIndex]);
+							if(this.wb) {
+								this.updateRank();
+							}
 						}
 						var candidatesLength = this.candidates.length;
 						if (key === this.selectingKeys[1]) {
@@ -417,16 +423,18 @@ IME.prototype = {
 		if(selected.length < 1) {
 			return false;
 		}
-		var pinyin = this.selectedPinyin;
+		var pinyin = this.selectedPinyin.compact();
 		var query = [];
 		var item = {};
 		var wordLength;
-		for(var i = 0;i < selected.length;i ++) {
-			item = {};
-			item.q = selected[i];
-			item.k = pinyin.splice(0, selected[i].length);
-			query.push(item);
-		}
+			for (var i = 0; i < selected.length; i++) {
+				item = {};
+				item.q = selected[i];
+				item.k = pinyin.splice(0, selected[i].length);
+				Mojo.Log.info("rank ==> " + item.k);
+				Mojo.Log.info("rank ==> " + item.q);
+				query.push(item);
+			}
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'put',
 					parameters : {
@@ -506,7 +514,9 @@ IME.prototype = {
 		this.ms = response.ms;
 		if (response.count > 0) {
 			if (this.wb === true && response.count == "1") {
-				this.sendResult(response.words.reduce());
+				this.selected.push(response.words.reduce());
+				this.selectedPinyin.push(this.inputPhase);
+				this.sendResult(this.selected.join(""));
 				this.updateRank();
 				this.hasCandidate = false;
 				this.selectedPinyin = [];
