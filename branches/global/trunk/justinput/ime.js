@@ -300,7 +300,7 @@ IME.prototype = {
 					} else {
 						// there is no cadidates, but the inputPhase is not
 						// empty, just push it out
-						if(this.inputPhase == "ustudy") {
+						if((this.inputPhase == "ustudy" && this.wb === false) || (this.inputPhase == "zstu" && this.wb)) {
 							this.toggleStudyMode();
 							this.getCandidatesFalse();
 							this.inputPhase = "";
@@ -431,8 +431,6 @@ IME.prototype = {
 				item = {};
 				item.q = selected[i];
 				item.k = pinyin.splice(0, selected[i].length);
-				Mojo.Log.info("rank ==> " + item.k);
-				Mojo.Log.info("rank ==> " + item.q);
 				query.push(item);
 			}
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
