@@ -6,7 +6,6 @@ IME.prototype = {
 	wb : false,
 	targetType : '',
 	active : false,
-	enMode : false,
 	text : undefined,
 	limit : 5,
 	allPinyin : undefined,
@@ -43,18 +42,17 @@ IME.prototype = {
 		if ($('canvas') === null) {
 			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
 			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
-			document.body.insert({
-						after : canvas
-					});
-			//$('status').observe('click', this.toggleIme.bind(this), true);
+			var status = '<div class="justinputStatus" id="status" style="z-index:99999999;"><div class="contentWrapStatus"><ul class="tabUnselect"><li id="statusType"><img src="/usr/palm/frameworks/mojo/justinput/en.gif" /></li><li id="studyMode"><img src="/usr/palm/frameworks/mojo/justinput/close.gif" /></li></ul></div>';
+			document.body.insert({after : canvas});
+			document.body.insert({after : status});
+			$('statusType').observe('click', this.toggleIme.bind(this), true);
+			$('studyMode').observe('click', this.toggleStudyMode.bind(this), true);
 		}
 		
-		//$('status').setStyle({top : "30px",left : "30px"});
-		//Drag.init($("status"));
-		//$('statusEN').hide();
-		//$('statusCN').hide();
+		$('status').setStyle({top : "80px",left : "200px"});
+		Drag.init($("status"));
 		$('canvas').hide();
-		this.toggleIme();
+		//this.toggleIme();
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) === false) {
@@ -118,17 +116,16 @@ IME.prototype = {
 	},
 	toggleIme : function() {
 		if (this.active === true) {
-			//$('statusEN').show();
-			//$('statusCN').hide();
 			this.active = false;
 		} else {
-			//$('statusEN').hide();
-			//$('statusCN').show();
 			this.active = true;
 		}
 
 		if (handlerBox.fxTextOnKeyDown) {
 			this.stopObservingKeyDown = handlerBox.fxTextOnKeyDown;
+		}
+		if (handlerBox.fxTextOnKeyUp) {
+			this.stopObservingKeyUp = handlerBox.fxTextOnKeyUp;
 		}
 		if (handlerBox.fxTextOnKeyPress) {
 			this.stopObservingKeyPress = handlerBox.fxTextOnKeyPress;
@@ -144,12 +141,14 @@ IME.prototype = {
 
 		if (this.active === true) {
 			handlerBox.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
+			handlerBox.fxTextOnKeyUp = this.textOnKeyUp.bind(this);
 			handlerBox.fxTextOnKeyPress = this.textOnKeyPress.bind(this);
 			handlerBox.fxTextOnFocus = this.textOnFocus.bind(this);
 			handlerBox.fxTextOnBlur = this.textOnBlur.bind(this);
 		}
 
 		var g = $$('input[type=text], textarea, div[x-mojo-element="SmartTextField"], div[x-mojo-element="RichTextEdit"]');
+		var actived = false;
 		for (var i = 0; i < g.length; i++) {
 			var handler;
 			if (g[i].tagName == "DIV") {
@@ -166,6 +165,10 @@ IME.prototype = {
 				handler.stopObserving('keydown', this.stopObservingKeyDown,
 						true);
 			}
+			if (this.stopObservingKeyUp) {
+				handler.stopObserving('keyup', this.stopObservingKeyUp,
+						true);
+			}
 			if (this.stopObservingKeyPress) {
 				handler.stopObserving('keypress', this.stopObservingKeyPress,
 						true);
@@ -178,12 +181,23 @@ IME.prototype = {
 			}
 
 			if (this.active === true) {
+				actived = true;
 				handler.observe('keydown', handlerBox.fxTextOnKeyDown, true);
+				handler.observe('keyup', handlerBox.fxTextOnKeyUp, true);
 				handler.observe('keypress', handlerBox.fxTextOnKeyPress, true);
 				handler.observe('focus', handlerBox.fxTextOnFocus, true);
 				handler.observe('blur', handlerBox.fxTextOnBlur, true);
 			}
 		}
+		if(actived) {
+			$('statusType').update('<img src="/usr/palm/frameworks/mojo/justinput/cn.gif" />');
+		}else {
+			$('statusType').update('<img src="/usr/palm/frameworks/mojo/justinput/en.gif" />');
+		}
+	},
+	textOnKeyUp : function(e) {
+		e.returnValue = false;
+		return false;
 	},
 	textOnFocus : function(e) {
 		this.active = true;
@@ -197,8 +211,10 @@ IME.prototype = {
 		if (this.active === false) {
 			return true;
 		} else {
-			this.text = e.srcElement;
-			this.targetType = e.srcElement.tagName;
+			if(e.srcElement) {
+				this.targetType = e.srcElement.tagName;
+				this.text = e.srcElement;
+			}
 		}
 		if (e.keyCode == 8) {
 			if (this.inputPhase.length > 0) {
@@ -235,8 +251,10 @@ IME.prototype = {
 		if (this.active === false) {
 			return true;
 		} else {
-			this.targetType = e.srcElement.tagName;
-			this.text = e.srcElement;
+			if(e.srcElement) {
+				this.targetType = e.srcElement.tagName;
+				this.text = e.srcElement;
+			}
 		}
 		var key = e.keyCode;
 		var seqMap = [3, 1, 0, 2, 4];
