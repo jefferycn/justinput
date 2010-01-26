@@ -6,6 +6,7 @@ IME.prototype = {
 	wb : false,
 	targetType : '',
 	active : false,
+	studyMode : false,
 	text : undefined,
 	limit : 5,
 	allPinyin : undefined,
@@ -42,17 +43,17 @@ IME.prototype = {
 		if ($('canvas') === null) {
 			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
 			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
-			var status = '<div class="justinputStatus" id="status" style="z-index:99999999;"><div class="contentWrapStatus"><ul class="tabUnselect"><li id="statusType"><img src="/usr/palm/frameworks/mojo/justinput/en.gif" /></li><li id="studyMode"><img src="/usr/palm/frameworks/mojo/justinput/close.gif" /></li></ul></div>';
+			//var status = '<div class="justinputStatus" id="status" style="z-index:99999999;"><div class="contentWrapStatus"><ul class="tabUnselect"><li id="statusType"><img src="/usr/palm/frameworks/mojo/justinput/en.gif" /></li><li id="studyMode"><img src="/usr/palm/frameworks/mojo/justinput/close.gif" /></li></ul></div>';
 			document.body.insert({after : canvas});
-			document.body.insert({after : status});
-			$('statusType').observe('click', this.toggleIme.bind(this), true);
-			$('studyMode').observe('click', this.toggleStudyMode.bind(this), true);
+			//document.body.insert({after : status});
+			//$('statusType').observe('click', this.toggleIme.bind(this), true);
+			//$('studyMode').observe('click', this.toggleStudyMode.bind(this), true);
 		}
 		
-		$('status').setStyle({top : "80px",left : "200px"});
-		Drag.init($("status"));
+		//$('status').setStyle({top : "80px",left : "200px"});
+		//Drag.init($("status"));
 		$('canvas').hide();
-		//this.toggleIme();
+		this.toggleIme();
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) === false) {
@@ -148,7 +149,6 @@ IME.prototype = {
 		}
 
 		var g = $$('input[type=text], textarea, div[x-mojo-element="SmartTextField"], div[x-mojo-element="RichTextEdit"]');
-		var actived = false;
 		for (var i = 0; i < g.length; i++) {
 			var handler;
 			if (g[i].tagName == "DIV") {
@@ -181,18 +181,12 @@ IME.prototype = {
 			}
 
 			if (this.active === true) {
-				actived = true;
 				handler.observe('keydown', handlerBox.fxTextOnKeyDown, true);
 				handler.observe('keyup', handlerBox.fxTextOnKeyUp, true);
 				handler.observe('keypress', handlerBox.fxTextOnKeyPress, true);
 				handler.observe('focus', handlerBox.fxTextOnFocus, true);
 				handler.observe('blur', handlerBox.fxTextOnBlur, true);
 			}
-		}
-		if(actived) {
-			$('statusType').update('<img src="/usr/palm/frameworks/mojo/justinput/cn.gif" />');
-		}else {
-			$('statusType').update('<img src="/usr/palm/frameworks/mojo/justinput/en.gif" />');
 		}
 	},
 	textOnKeyUp : function(e) {
@@ -203,18 +197,18 @@ IME.prototype = {
 		this.active = true;
 		this.text = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
+		$('canvas').show();
 	},
 	textOnBlur : function(e) {
 		this.active = false;
+		$('canvas').hide();
 	},
 	textOnKeyDown : function(e) {
 		if (this.active === false) {
 			return true;
 		} else {
-			if(e.srcElement) {
-				this.targetType = e.srcElement.tagName;
-				this.text = e.srcElement;
-			}
+			this.targetType = e.srcElement.tagName;
+			this.text = e.srcElement;
 		}
 		if (e.keyCode == 8) {
 			if (this.inputPhase.length > 0) {
@@ -251,10 +245,8 @@ IME.prototype = {
 		if (this.active === false) {
 			return true;
 		} else {
-			if(e.srcElement) {
-				this.targetType = e.srcElement.tagName;
-				this.text = e.srcElement;
-			}
+			this.targetType = e.srcElement.tagName;
+			this.text = e.srcElement;
 		}
 		var key = e.keyCode;
 		var seqMap = [3, 1, 0, 2, 4];
@@ -463,7 +455,6 @@ IME.prototype = {
 		var query = [];
         var q;
         var full;
-        var table = "words";
 		if (this.wb === true) {
 			q = this.inputPinyin.reduce();
 			if(q.length > 2) {
@@ -508,7 +499,7 @@ IME.prototype = {
 					parameters : {
 						query : query,
 						offset : this.offset,
-						table : table
+						isWb : this.wb
 					},
 					onSuccess : this.getCandidates.bind(this),
 					onFailure : this.getCandidatesFalse.bind(this)
@@ -528,6 +519,7 @@ IME.prototype = {
 	getCandidates : function(response) {
 		this.holdInput = false;
 		this.ms = response.ms;
+		this.studyMode = response.studyMode;
 		if (response.count > 0) {
 			if (this.wb === true && response.count == "1") {
 				this.selected.push(response.words.reduce());
@@ -612,10 +604,14 @@ IME.prototype = {
 		for (var i = 0; i < list.length; i++) {
 			list[i].update(candidates[i]);
 			wordLength += candidates[i].length;
+			list[i].removeClassName("tabSelectA");
+			list[i].removeClassName("tabSelectB");
 			if(i == this.activeCandidateIndex) {
-				list[i].addClassName("tabSelect");
-			}else {
-				list[i].removeClassName("tabSelect");
+				if(this.studyMode) {
+					list[i].addClassName("tabSelectB");
+				}else {
+					list[i].addClassName("tabSelectA");
+				}
 			}
 		}
 		if(wordLength > 5)	{
