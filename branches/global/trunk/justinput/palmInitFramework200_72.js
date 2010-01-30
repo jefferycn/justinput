@@ -26288,6 +26288,7 @@ this.userScalable=userScalable;
 
 Mojo.Event.webViewFirstPaintComplete='mojo-webview-first-paint-complete';
 
+
 Mojo.Widget.WebView=Class.create({
 
 smartZoomScaleSlopFactor:1.05,
@@ -26502,6 +26503,7 @@ catch(e){
 Mojo.Log.logException(e,'setup');
 }
 },
+
 cleanup:function(){
 
 this.controller.document.removeEventListener(Mojo.Event.activate,this._cardActivate,false);
@@ -29060,6 +29062,7 @@ delete this._sendResponse;
 this.widget.mojo.close();
 }
 });
+
 
 Mojo.Widget.WebView.DialogUsernamePasswordAssistant=Class.create({
 
