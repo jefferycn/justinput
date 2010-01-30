@@ -4,6 +4,9 @@ var IME = Class.create();
 
 IME.prototype = {
 	wb : false,
+	canvas : undefined,
+	board : undefined,
+	candidate : undefined,
 	targetType : '',
 	active : false,
 	studyMode : false,
@@ -14,7 +17,6 @@ IME.prototype = {
 	pageUpKey : 95,
 	spliterKey : 39,
 	spaceKey : 32,
-    // alt key : 129/altKey=true  shift key : 16/shiftKey=true
 	selectingKeys : [32, 64, 46],
 	holdInput : false,
 	inputPhase : "",
@@ -26,10 +28,19 @@ IME.prototype = {
 	offset : 0,
 	candidatesNum : 0,
 	activeCandidateIndex : 2,
-	initialize : function(type) {
+	isBrowser : false,
+	sending : "",
+	initialize : function(type, isBrowser) {
 		// set all working enviroment
 		if (type == 'wb') {
 			this.wb = true;
+		}
+		if(isBrowser) {
+			this.isBrowser = true;
+			this.selectingKeys = [32, 64, 190];
+		}else {
+			this.isBrowser = false;
+			this.selectingKeys = [32, 64, 46];
 		}
 		this.hasCandidate = false;
 		this.selectedPinyin = [];
@@ -39,20 +50,6 @@ IME.prototype = {
 		if (this.wb === false) {
 			this.allPinyin = new PrefixMap(PinyingSource.table);
 		}
-		// initial canvas
-		if ($('canvas') === null) {
-			//var canvas = '<div id="canvas"><div id="board"><ul><li id="workspace" style="width: 100%;text-align: left; font-weight: bold;"></li></ul><ul id="candidate"><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
-			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
-			//var status = '<div class="justinputStatus" id="status" style="z-index:99999999;"><div class="contentWrapStatus"><ul class="tabUnselect"><li id="statusType"><img src="/usr/palm/frameworks/mojo/justinput/en.gif" /></li><li id="studyMode"><img src="/usr/palm/frameworks/mojo/justinput/close.gif" /></li></ul></div>';
-			document.body.insert({after : canvas});
-			//document.body.insert({after : status});
-			//$('statusType').observe('click', this.toggleIme.bind(this), true);
-			//$('studyMode').observe('click', this.toggleStudyMode.bind(this), true);
-		}
-		
-		//$('status').setStyle({top : "80px",left : "200px"});
-		//Drag.init($("status"));
-		$('canvas').hide();
 		this.toggleIme();
 	},
 	inArray : function(v, array) {
@@ -115,18 +112,45 @@ IME.prototype = {
 			c.select();
 		}
 	},
+	setupCanvas : function(canvas, board, candidate, adapter) {
+		this.canvas = canvas;
+		this.board = board;
+		this.candidate = candidate;
+		this.adapter = adapter;
+	},
+	installCanvas : function() {
+		if(document.getElementById('canvas') === null) {
+			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
+			document.body.insert({after : canvas});
+			this.canvas = document.getElementById('canvas');
+			this.board = document.getElementById('board');
+			this.candidate = document.getElementById('candidate');
+			this.canvas.hide();
+		}
+	},
+	uninstallCanvas : function() {
+		if(document.getElementById('canvas')) {
+			document.getElementById('canvas').remove();
+			this.canvas = undefined;
+			this.board = undefined;
+			this.candidate = undefined;
+		}
+	},
 	toggleIme : function() {
 		if (this.active === true) {
 			this.active = false;
+			this.uninstallCanvas();
 		} else {
+			this.installCanvas();
 			this.active = true;
 		}
-
+		
+		if(this.isBrowser) {
+			return false;
+		}
+		
 		if (handlerBox.fxTextOnKeyDown) {
 			this.stopObservingKeyDown = handlerBox.fxTextOnKeyDown;
-		}
-		if (handlerBox.fxTextOnKeyUp) {
-			this.stopObservingKeyUp = handlerBox.fxTextOnKeyUp;
 		}
 		if (handlerBox.fxTextOnKeyPress) {
 			this.stopObservingKeyPress = handlerBox.fxTextOnKeyPress;
@@ -142,13 +166,12 @@ IME.prototype = {
 
 		if (this.active === true) {
 			handlerBox.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
-			handlerBox.fxTextOnKeyUp = this.textOnKeyUp.bind(this);
 			handlerBox.fxTextOnKeyPress = this.textOnKeyPress.bind(this);
 			handlerBox.fxTextOnFocus = this.textOnFocus.bind(this);
 			handlerBox.fxTextOnBlur = this.textOnBlur.bind(this);
 		}
 
-		var g = $$('input[type=text], textarea, div[x-mojo-element="SmartTextField"], div[x-mojo-element="RichTextEdit"]');
+		var g = document.body.getElementsBySelector('input[type=text], textarea, div[x-mojo-element="SmartTextField"], div[x-mojo-element="RichTextEdit"]');
 		for (var i = 0; i < g.length; i++) {
 			var handler;
 			if (g[i].tagName == "DIV") {
@@ -165,10 +188,6 @@ IME.prototype = {
 				handler.stopObserving('keydown', this.stopObservingKeyDown,
 						true);
 			}
-			if (this.stopObservingKeyUp) {
-				handler.stopObserving('keyup', this.stopObservingKeyUp,
-						true);
-			}
 			if (this.stopObservingKeyPress) {
 				handler.stopObserving('keypress', this.stopObservingKeyPress,
 						true);
@@ -182,33 +201,28 @@ IME.prototype = {
 
 			if (this.active === true) {
 				handler.observe('keydown', handlerBox.fxTextOnKeyDown, true);
-				handler.observe('keyup', handlerBox.fxTextOnKeyUp, true);
 				handler.observe('keypress', handlerBox.fxTextOnKeyPress, true);
 				handler.observe('focus', handlerBox.fxTextOnFocus, true);
 				handler.observe('blur', handlerBox.fxTextOnBlur, true);
 			}
 		}
 	},
-	textOnKeyUp : function(e) {
-		e.returnValue = false;
-		return false;
-	},
 	textOnFocus : function(e) {
-		this.active = true;
 		this.text = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
-		$('canvas').show();
+		this.canvas.show();
 	},
 	textOnBlur : function(e) {
-		this.active = false;
-		$('canvas').hide();
+		this.canvas.hide();
 	},
 	textOnKeyDown : function(e) {
 		if (this.active === false) {
 			return true;
 		} else {
-			this.targetType = e.srcElement.tagName;
-			this.text = e.srcElement;
+			if(!this.isBrowser) {
+				this.targetType = e.srcElement.tagName;
+				this.text = e.srcElement;
+			}
 		}
 		if (e.keyCode == 8) {
 			if (this.inputPhase.length > 0) {
@@ -245,8 +259,10 @@ IME.prototype = {
 		if (this.active === false) {
 			return true;
 		} else {
-			this.targetType = e.srcElement.tagName;
-			this.text = e.srcElement;
+			if(!this.isBrowser) {
+				this.targetType = e.srcElement.tagName;
+				this.text = e.srcElement;
+			}
 		}
 		var key = e.keyCode;
 		var seqMap = [3, 1, 0, 2, 4];
@@ -403,6 +419,10 @@ IME.prototype = {
 		this.activeCandidateIndex = 2;
 	},
 	sendResult : function(str) {
+		if(this.isBrowser) {
+			this.adapter.insertStringAtCursor(str);
+			return false;
+		}
 		var result;
 		switch (this.targetType) {
 			case 'DIV' :
@@ -514,7 +534,7 @@ IME.prototype = {
 		this.selected = [];
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
-		$('canvas').hide();
+		this.canvas.hide();
 	},
 	getCandidates : function(response) {
 		this.holdInput = false;
@@ -532,7 +552,7 @@ IME.prototype = {
 				this.offset = 0;
 				this.activeCandidateIndex = 2;
 				this.inputPhase = "";
-				$('canvas').hide();
+				this.canvas.hide();
 			} else {
 				this.candidates = response.words;
 				this.candidatesNum = response.count;
@@ -557,7 +577,7 @@ IME.prototype = {
 				this.selected = [];
 				this.offset = 0;
 				this.activeCandidateIndex = 2;
-				$('canvas').hide();
+				this.canvas.hide();
 			}
 		}
 	},
@@ -598,8 +618,8 @@ IME.prototype = {
 			workspace = this.selected.join('') + this.inputPinyin.join("'");
 		}
 		var candidates = this.sortArray();
-		$('board').update(workspace);
-		var list = $('candidate').childElements();
+		this.board.update(workspace);
+		var list = this.candidate.childElements();
 		var wordLength = 0;
 		for (var i = 0; i < list.length; i++) {
 			list[i].update(candidates[i]);
@@ -614,15 +634,25 @@ IME.prototype = {
 				}
 			}
 		}
+		var minLength;
 		if(wordLength > 5)	{
-			var minLength = 170 + (wordLength - 5) * 16;
-			$('canvas').setStyle({"min-width" : minLength + "px"});
+			minLength = 170 + (wordLength - 5) * 16;
 		}else {
-			$('canvas').setStyle({"min-width" : "170px"});
+			minLength = 170;
 		}
-		// $('ms').update(this.ms);
-		this.setPosition();
-		$('canvas').show();
+		this.canvas.setStyle({"min-width" : minLength + "px"});
+		if(this.isBrowser) {
+			var left;
+			if(minLength > 310) {
+				left = 310 - minLength;
+			}else {
+				left = 10;
+			}
+			this.canvas.setStyle({top : "120px", left : left + "px"});
+		}else {
+			this.setPosition();
+		}
+		this.canvas.show();
 	},
 	setPosition : function() {
 		var top;
@@ -641,7 +671,7 @@ IME.prototype = {
 		if (cursorPos) {
 			viewDims = document.viewport.getDimensions();
 
-			pickerDims = $('canvas').getDimensions();
+			pickerDims = this.canvas.getDimensions();
 
 			if(pickerDims.height < 72) {
 				// can't get the correct dimension height, hack here
@@ -680,7 +710,7 @@ IME.prototype = {
 			left = '0px';
 			top = '0px';
 		}
-		$('canvas').setStyle({
+		this.canvas.setStyle({
 					top : top,
 					left : left
 				});
