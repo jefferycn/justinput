@@ -7,6 +7,7 @@ IME.prototype = {
 	canvas : undefined,
 	board : undefined,
 	candidate : undefined,
+	status: undefined,
 	targetType : '',
 	active : false,
 	studyMode : false,
@@ -37,7 +38,9 @@ IME.prototype = {
 		}
 		if(isBrowser) {
 			this.isBrowser = true;
-			this.selectingKeys = [32, 64, 190];
+			// for the device key codes, some of the keys are not the same as normal
+			this.selectingKeys = [32, 48, 190];
+			this.pageDownKey = 188;
 		}else {
 			this.isBrowser = false;
 			this.selectingKeys = [32, 64, 46];
@@ -122,18 +125,26 @@ IME.prototype = {
 		if(document.getElementById('canvas') === null) {
 			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
 			document.body.insert({after : canvas});
+			var status = '<div id="status" style="position: absolute;z-index:99999999;opacity:0.7;"><img src="/usr/palm/frameworks/mojo/submissions/200.72/images/status-available-dark.png"></div>';
+			document.body.insert({after : status});
+			this.status = document.getElementById('status');
 			this.canvas = document.getElementById('canvas');
 			this.board = document.getElementById('board');
 			this.candidate = document.getElementById('candidate');
 			this.canvas.hide();
+			if(!this.isBrowser) {
+				this.setCursorStatusPos();
+			}
 		}
 	},
 	uninstallCanvas : function() {
 		if(document.getElementById('canvas')) {
 			document.getElementById('canvas').remove();
+			document.getElementById('status').remove();
 			this.canvas = undefined;
 			this.board = undefined;
 			this.candidate = undefined;
+			this.status = undefined;
 		}
 	},
 	toggleIme : function() {
@@ -210,9 +221,15 @@ IME.prototype = {
 	textOnFocus : function(e) {
 		this.text = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
-		this.canvas.show();
+		this.getCandidatesFalse();
+		this.inputPhase = "";
+		if(!this.isBrowser) {
+			this.status.show();
+			this.setCursorStatusPos();
+		}
 	},
 	textOnBlur : function(e) {
+		this.status.hide();
 		this.canvas.hide();
 	},
 	textOnKeyDown : function(e) {
@@ -246,12 +263,19 @@ IME.prototype = {
 					e.returnValue = false;
 				}
 			}
+			
+			if(!this.isBrowser) {
+				this.setCursorStatusPos();
+			}
 			return false;
 		}else if(e.keyCode == 13 && this.inputPhase.length > 0) {
 			this.getCandidatesFalse();
 			this.sendResult(this.inputPhase);
 			this.inputPhase = "";
 			e.returnValue = false;
+			if(!this.isBrowser) {
+				this.setCursorStatusPos();
+			}
 			return false;
 		}
 	},
@@ -535,6 +559,9 @@ IME.prototype = {
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
 		this.canvas.hide();
+		if(!this.isBrowser) {
+			this.setCursorStatusPos();
+		}
 	},
 	getCandidates : function(response) {
 		this.holdInput = false;
@@ -651,8 +678,17 @@ IME.prototype = {
 			this.canvas.setStyle({top : "120px", left : left + "px"});
 		}else {
 			this.setPosition();
+			this.setCursorStatusPos();
 		}
+		
 		this.canvas.show();
+	},
+	setCursorStatusPos : function() {
+		var cursorPos = window.caretRect();
+		var left = cursorPos.x - 7;
+		var top = cursorPos.y + 27;
+		this.status.setStyle({top : top + "px", left : left + "px"});
+		this.status.show();
 	},
 	setPosition : function() {
 		var top;
