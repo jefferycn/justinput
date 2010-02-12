@@ -26564,14 +26564,14 @@ this.adapter.pageFocused(this.hasFocus);
 
 
 _handleKeyUpJustInput:function(e){
-    var canvas = this.controller.get('canvas');
+    var canvas = this.controller.get('_ime_canvas');
     if(canvas != null) {
         if(typeof(this.ime) == "undefined") {
             this.ime = new IME("py", true);
         }
         this.ime.active = true;
-        var board = this.controller.get('board');
-        var candidate = this.controller.get('candidate');
+        var board = this.controller.get('_ime_board');
+        var candidate = this.controller.get('_ime_candidate');
         this.ime.setupCanvas(canvas, board, candidate, this.adapter);
         this.ime.textOnKeyDown(e);
         this.ime.textOnKeyPress(e);
