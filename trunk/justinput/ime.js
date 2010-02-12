@@ -31,6 +31,7 @@ IME.prototype = {
 	activeCandidateIndex : 2,
 	isBrowser : false,
 	sending : "",
+	leftCoordinate : 0,
 	initialize : function(type, isBrowser) {
 		// set all working enviroment
 		if (type == 'wb') {
@@ -122,15 +123,15 @@ IME.prototype = {
 		this.adapter = adapter;
 	},
 	installCanvas : function() {
-		if(document.getElementById('canvas') === null) {
-			var canvas = '<div class="justinputCanvas" id="canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="board"></li></ul><ul class="tabWrapTop" id="candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
+		if(document.getElementById('_ime_canvas') === null) {
+			var canvas = '<div class="justinputCanvas" id="_ime_canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="_ime_board"></li></ul><ul class="tabWrapTop" id="_ime_candidate"><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li></ul></div></div>';
 			document.body.insert({after : canvas});
-			var status = '<div id="status" style="position: absolute;z-index:99999999;opacity:0.7;"><img src="/usr/palm/frameworks/mojo/submissions/200.72/images/status-available-dark.png"></div>';
+			var status = '<div id="_ime_status" style="position: absolute;z-index:99999999;"><img src="/usr/palm/frameworks/mojo/justinput/status-available-dark.png"></div>';
 			document.body.insert({after : status});
-			this.status = document.getElementById('status');
-			this.canvas = document.getElementById('canvas');
-			this.board = document.getElementById('board');
-			this.candidate = document.getElementById('candidate');
+			this.status = document.getElementById('_ime_status');
+			this.canvas = document.getElementById('_ime_canvas');
+			this.board = document.getElementById('_ime_board');
+			this.candidate = document.getElementById('_ime_candidate');
 			this.canvas.hide();
 			if(!this.isBrowser) {
 				this.setCursorStatusPos();
@@ -138,9 +139,9 @@ IME.prototype = {
 		}
 	},
 	uninstallCanvas : function() {
-		if(document.getElementById('canvas')) {
-			document.getElementById('canvas').remove();
-			document.getElementById('status').remove();
+		if(document.getElementById('_ime_canvas')) {
+			document.getElementById('_ime_canvas').remove();
+			document.getElementById('_ime_status').remove();
 			this.canvas = undefined;
 			this.board = undefined;
 			this.candidate = undefined;
@@ -166,6 +167,9 @@ IME.prototype = {
 		if (handlerBox.fxTextOnKeyPress) {
 			this.stopObservingKeyPress = handlerBox.fxTextOnKeyPress;
 		}
+		if (handlerBox.fxTextOnKeyUp) {
+			this.stopObservingKeyUp = handlerBox.fxTextOnKeyUp;
+		}
 		if (handlerBox.fxTextOnFocus) {
 			this.stopObservingFocus = handlerBox.fxTextOnFocus;
 		}
@@ -178,6 +182,7 @@ IME.prototype = {
 		if (this.active === true) {
 			handlerBox.fxTextOnKeyDown = this.textOnKeyDown.bind(this);
 			handlerBox.fxTextOnKeyPress = this.textOnKeyPress.bind(this);
+			handlerBox.fxTextOnKeyUp = this.textOnKeyUp.bind(this);
 			handlerBox.fxTextOnFocus = this.textOnFocus.bind(this);
 			handlerBox.fxTextOnBlur = this.textOnBlur.bind(this);
 		}
@@ -203,6 +208,10 @@ IME.prototype = {
 				handler.stopObserving('keypress', this.stopObservingKeyPress,
 						true);
 			}
+			if (this.stopObservingKeyUp) {
+				handler.stopObserving('keyup', this.stopObservingKeyUp,
+						true);
+			}
 			if (this.stopObservingFocus) {
 				handler.stopObserving('focus', this.stopObservingFocus, true);
 			}
@@ -213,10 +222,17 @@ IME.prototype = {
 			if (this.active === true) {
 				handler.observe('keydown', handlerBox.fxTextOnKeyDown, true);
 				handler.observe('keypress', handlerBox.fxTextOnKeyPress, true);
+				handler.observe('keyup', handlerBox.fxTextOnKeyUp, true);
 				handler.observe('focus', handlerBox.fxTextOnFocus, true);
 				handler.observe('blur', handlerBox.fxTextOnBlur, true);
 			}
 		}
+	},
+	textOnKeyUp : function(e) {
+//		if(!this.isBrowser) {
+//			this.status.show();
+//			this.setCursorStatusPos();
+//		}
 	},
 	textOnFocus : function(e) {
 		this.text = e.currentTarget;
@@ -263,19 +279,12 @@ IME.prototype = {
 					e.returnValue = false;
 				}
 			}
-			
-			if(!this.isBrowser) {
-				this.setCursorStatusPos();
-			}
 			return false;
 		}else if(e.keyCode == 13 && this.inputPhase.length > 0) {
 			this.getCandidatesFalse();
 			this.sendResult(this.inputPhase);
 			this.inputPhase = "";
 			e.returnValue = false;
-			if(!this.isBrowser) {
-				this.setCursorStatusPos();
-			}
 			return false;
 		}
 	},
@@ -560,7 +569,7 @@ IME.prototype = {
 		this.activeCandidateIndex = 2;
 		this.canvas.hide();
 		if(!this.isBrowser) {
-			this.setCursorStatusPos();
+			//this.setCursorStatusPos();
 		}
 	},
 	getCandidates : function(response) {
@@ -678,16 +687,18 @@ IME.prototype = {
 			this.canvas.setStyle({top : "120px", left : left + "px"});
 		}else {
 			this.setPosition();
-			this.setCursorStatusPos();
+			//this.setCursorStatusPos();
 		}
 		
 		this.canvas.show();
 	},
 	setCursorStatusPos : function() {
-		var cursorPos = window.caretRect();
-		var left = cursorPos.x - 7;
-		var top = cursorPos.y + 27;
-		this.status.setStyle({top : top + "px", left : left + "px"});
+		//var cursorPos = window.caretRect();
+		//var left;
+		//var top;
+		//left = cursorPos.x - 7;
+		//top = cursorPos.y + 27;
+		this.status.setStyle({top : "4px", left : "4px"});
 		this.status.show();
 	},
 	setPosition : function() {
