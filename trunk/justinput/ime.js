@@ -297,6 +297,8 @@ IME.prototype = {
 				this.text = e.srcElement;
 			}
 		}
+		// clean the pagination offset
+		this.offset = 0;
 		var key = e.keyCode;
 		var seqMap = [3, 1, 0, 2, 4];
 		if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
@@ -308,7 +310,7 @@ IME.prototype = {
 				key += 32;
 			}
 			if (this.wb === true) {
-				if (this.inputPhase.length >= 4) {
+				if (this.inputPhase.length >= 5) {
 					// send the active word
 					this.phaseSelected(seqMap[this.activeCandidateIndex]);
 					this.getCandidatesFalse();
@@ -510,14 +512,14 @@ IME.prototype = {
         var full;
 		if (this.wb === true) {
 			q = this.inputPinyin.reduce();
-			if(q.length > 2) {
-				full = "false";
-			}else {
-				full = "true";
-			}
+//			if(q.length > 2) {
+//				full = "false";
+//			}else {
+//				full = "true";
+//			}
 			query.push({
 						"q" : q,
-						"full" : full
+						"full" : "false"
 					});
 		} else {
 			var rest = this.inputPinyin;
@@ -551,8 +553,7 @@ IME.prototype = {
 					method : 'get',
 					parameters : {
 						query : query,
-						offset : this.offset,
-						isWb : this.wb
+						offset : this.offset
 					},
 					onSuccess : this.getCandidates.bind(this),
 					onFailure : this.getCandidatesFalse.bind(this)
