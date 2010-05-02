@@ -12,14 +12,15 @@ IME.prototype = {
 	active : false,
 	studyMode : false,
 	targetElement : undefined,
-	limit : 6,
+	limit : 3,
 	pageDownKey : 44,
 	pageUpKey : 95,
 	spliterKey : 39,
+	lastestKey : 0,
 	spaceKey : 32,
-	selectingKeys : [101, 114, 116, 100, 102, 103],
+	selectingKeys : [],
 	// z x c v b n m
-	// [90, 88, 67, 86, 66, 78, 77] [122, 120, 99, 118, 98, 110, 109]
+	// [90, 88, 67, 86, 66, 78, 77] [122, 120, 99, 118, 98, 110, 109] [101, 114, 116, 100, 102, 103]
 	holdInput : false,
 	spaceLock : false,
 	inputPhase : "",
@@ -29,7 +30,6 @@ IME.prototype = {
 	hasCandidate : false,
 	hasPage : false,
 	offset : 0,
-	pageCount : 0,
 	offsets : [],
 	activeCandidateIndex : 2,
 	isBrowser : false,
@@ -41,10 +41,12 @@ IME.prototype = {
 			this.isBrowser = true;
 			// for the device key codes, some of the keys are not the same as normal
 			//this.selectingKeys = [32, 48, 190];
+			this.selectingKeys = [48, 32, 190];
 			this.pageDownKey = 188;
 		}else {
 			this.isBrowser = false;
 			//this.selectingKeys = [32, 64, 46];
+			this.selectingKeys = [64, 32, 46];
 		}
 		this.hasCandidate = false;
 		this.cached = [];
@@ -288,7 +290,7 @@ IME.prototype = {
 					this.update();
 					e.returnValue = false;
 				}
-				this.spaceLock = false;
+				//this.spaceLock = false;
 			}
 			return false;
 		}else if(e.keyCode == 13 && this.inputPhase.length > 0) {
@@ -311,7 +313,7 @@ IME.prototype = {
 		// clean the pagination offset
 		//this.offset = 0;
 		var key = e.keyCode;
-			if (this.spaceLock && this.inArray(key, this.selectingKeys)) {
+			if (this.inArray(key, this.selectingKeys)) {
 				// choose from select list
 				if (this.inputPhase.length > 0) {
 					if (this.holdInput) {
@@ -343,8 +345,8 @@ IME.prototype = {
 //							}
 //						}
 						var selectIndex = this.selectingKeys.indexOf(key);
-						if(selectIndex > this.pageCount - 1) {
-							selectIndex = this.pageCount - 1;
+						if(this.candidates.length == 1 && selectIndex == 1) {
+							selectIndex = 0;
 						}
 						this.phaseSelected(selectIndex);
 						this.update();
@@ -390,14 +392,17 @@ IME.prototype = {
 //					this.inputPhase += String.fromCharCode(key);
 //				}
 //			}else {
-				this.inputPhase += String.fromCharCode(key);
+				if(!(this.lastestKey == key && this.spliterKey == key)) {
+					this.lastestKey = key;
+					this.inputPhase += String.fromCharCode(key);
+					this.update();
+				}
 //			}
-				this.spaceLock = false;
-				this.update();
-			}else if(this.hasCandidate && e.keyCode == this.spaceKey) {
-				this.toggleLock();
-				e.returnValue = false;
-				return false;
+				//this.spaceLock = false;
+//			}else if(this.hasCandidate && e.keyCode == this.spaceKey) {
+//				this.toggleLock();
+//				e.returnValue = false;
+//				return false;
 			} else {
 				if (e.keyCode == this.pageDownKey && this.hasCandidate) {
 					this.pageDown();
@@ -415,18 +420,23 @@ IME.prototype = {
 			e.returnValue = false;
 	},
 	pageUp : function() {
-		if (this.offsets.length > 0) {
-			this.offset = this.offsets.pop();
+//		if (this.offsets.length > 0) {
+//			this.offset = this.offsets.pop();
+//		}else {
+//			this.offset = 0;
+//		}
+		if (this.offset > 0) {
+			this.offset -= this.limit;
 		}else {
-			this.offset = 0;
 		}
 		this.activeCandidateIndex = 2;
 		this.update();
 	},
 	pageDown : function() {
 		if (this.hasPage) {
-			this.offsets.push(this.offset);
-			this.offset = this.offset + this.pageCount;
+//			this.offsets.push(this.offset);
+//			this.offset = this.offset + this.pageCount;
+			this.offset += this.limit;
 			this.activeCandidateIndex = 2;
 			this.update();
 		}
@@ -438,7 +448,19 @@ IME.prototype = {
 			searchString += this.searched.shift() + "";
 		}
 		if(selected.l > 0) {
-			this.inputPhase = this.inputPhase.substring(searchString.length);
+			var head = this.inputPhase.substring(0, searchString.length);
+			head = head.replace("'", "");
+			var cutLength;
+			if(head.length < searchString.length) {
+				cutLength = searchString.length - head.length + searchString.length;
+			}else {
+				cutLength = searchString.length;
+			}
+			this.inputPhase = this.inputPhase.substring(cutLength);
+			if(this.inputPhase.substring(0, 1) == "'") {
+				this.inputPhase = this.inputPhase.substring(1);
+				searchString += "'";
+			}
 		}else {
 			this.inputPhase = "";
 			if(selected.v == "zstu") {
@@ -450,7 +472,7 @@ IME.prototype = {
 		this.cached.push(searchString);
 		this.selected.push(selected.v);
 		this.selectedCandidate.push(selected);
-		this.spaceLock = false;
+		//this.spaceLock = false;
 		// clean the pagination offset
 		this.offset = 0;
 		this.activeCandidateIndex = 2;
@@ -508,7 +530,6 @@ IME.prototype = {
 					}
 				});
 		}else {
-		Mojo.Log.info("initialize ======> " + selected);
 			var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'put',
 					parameters : {
@@ -519,7 +540,9 @@ IME.prototype = {
 	},
 	update : function() {
 		var query = this.inputPhase + "";
+		Mojo.Log.info("query ======> " + query);
 		this.holdInput = true;
+		if(query.length > 0) {
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'get',
 					parameters : {
@@ -530,6 +553,9 @@ IME.prototype = {
 					onSuccess : this.getCandidates.bind(this),
 					onFailure : this.getCandidatesFalse.bind(this)
 				});
+		}else {
+			this.getCandidatesFalse();
+		}
 	},
 	getCandidatesFalse : function() {
 		this.holdInput = false;
@@ -607,34 +633,30 @@ IME.prototype = {
 		//var candidates = this.sortArray();
 		this.board.update(workspace);
 		//var list = this.candidate.childElements();
-		//var wordLength = 0;
+		var wordLength = 0;
 		var candidateHtml = "";
-		var lastHtml = "";
-		this.canvas.show();
-		this.pageCount = 0;
+//		var lastHtml = "";
+//		this.canvas.show();
+//		this.pageCount = 0;
 		for (var i = 0; i < this.candidates.length; i++) {
-			this.pageCount ++;
-			var index = i + 1;
-			lastHtml = candidateHtml;
-			if(i === 0) {
-				var c;
-				if(this.spaceLock) {
-					c = "tabSelectA";
-				}else {
-					c = "tabSelectB";
-				}
-				candidateHtml += "<li class=\"tabUnselect " + c + "\">" + index + ". " + this.candidates[i].v + "</li>";
-			}else {
-				candidateHtml += "<li class=\"tabUnselect\">" + index + ". " + this.candidates[i].v + "</li>";
-			}
-			this.candidate.update(candidateHtml);
-			if(this.candidate.getDimensions().height > 37) {
-				this.pageCount --;
-				this.candidate.update(lastHtml);
+			if(i >= this.limit) {
 				break;
 			}
+//			this.pageCount ++;
+			if(i === 1) {
+//				var c;
+//				if(this.spaceLock) {
+//					c = "tabSelectA";
+//				}else {
+//					c = "tabSelectB";
+//				}
+				candidateHtml += "<li class=\"tabUnselect tabSelectB\">" + this.candidates[i].v + "</li>";
+			}else {
+				candidateHtml += "<li class=\"tabUnselect\">" + this.candidates[i].v + "</li>";
+			}
+			this.candidate.update(candidateHtml);
 			//list[i].update(candidates[i]);
-//			wordLength += this.candidates[i].l;
+			wordLength += this.candidates[i].v.length;
 //			list[i].removeClassName("tabSelectA");
 //			list[i].removeClassName("tabSelectB");
 //			if(i == this.activeCandidateIndex) {
@@ -646,13 +668,13 @@ IME.prototype = {
 //			}
 		}
 		
-//		var minLength;
-//		if(wordLength > 5)	{
-//			minLength = 170 + (wordLength - 5) * 16;
-//		}else {
-//			minLength = 170;
-//		}
-		this.canvas.setStyle({"min-width" : "320px"});
+		var minLength;
+		if(wordLength > 3)	{
+			minLength = 128 + (wordLength - 3) * 16;
+		}else {
+			minLength = 128;
+		}
+		this.canvas.setStyle({"min-width" : minLength + "px"});
 		if(this.isBrowser) {
 			this.canvas.setStyle({top : "120px", left : "0px"});
 		}else {
