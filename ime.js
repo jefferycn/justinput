@@ -10,19 +10,17 @@ IME.prototype = {
 	searched: [],
 	targetType : '',
 	active : false,
-	studyMode : false,
+	cnMode : false,
 	targetElement : undefined,
 	limit : 3,
 	pageDownKey : 44,
 	pageUpKey : 95,
 	spliterKey : 39,
 	lastestKey : 0,
-	spaceKey : 32,
 	selectingKeys : [],
 	// z x c v b n m
 	// [90, 88, 67, 86, 66, 78, 77] [122, 120, 99, 118, 98, 110, 109] [101, 114, 116, 100, 102, 103]
 	holdInput : false,
-	spaceLock : false,
 	inputPhase : "",
 	candidates : [],
 	selected : [],
@@ -30,11 +28,11 @@ IME.prototype = {
 	hasCandidate : false,
 	hasPage : false,
 	offset : 0,
-	offsets : [],
-	activeCandidateIndex : 2,
+//	activeCandidateIndex : 2,
+	angleQuotes : false,
+	doubleQuotes : false,
+	singleQuotes : false,
 	isBrowser : false,
-	sending : "",
-	leftCoordinate : 0,
 	initialize : function(isBrowser) {
 		// set all working enviroment
 		if(isBrowser) {
@@ -53,7 +51,7 @@ IME.prototype = {
 		this.selected = [];
 		this.selectedCandidate = [];
 		this.offset = 0;
-		this.activeCandidateIndex = 2;
+//		this.activeCandidateIndex = 2;
 		//this.allPinyin = new PrefixMap(PinyingSource.table);
 		this.toggleIme();
 	},
@@ -229,18 +227,18 @@ IME.prototype = {
 			}
 		}
 	},
-	toggleLock : function() {
-		var list = this.candidate.childElements();
-		if(this.spaceLock) {
-			list[0].removeClassName("tabSelectA");
-			list[0].addClassName("tabSelectB");
-			this.spaceLock = false;
-		}else {
-			list[0].removeClassName("tabSelectB");
-			list[0].addClassName("tabSelectA");
-			this.spaceLock = true;
-		}
-	},
+//	toggleLock : function() {
+//		var list = this.candidate.childElements();
+//		if(this.spaceLock) {
+//			list[0].removeClassName("tabSelectA");
+//			list[0].addClassName("tabSelectB");
+//			this.spaceLock = false;
+//		}else {
+//			list[0].removeClassName("tabSelectB");
+//			list[0].addClassName("tabSelectA");
+//			this.spaceLock = true;
+//		}
+//	},
 	textOnFocus : function(e) {
 		this.targetElement = e.currentTarget;
 		this.targetType = e.srcElement.tagName;
@@ -271,7 +269,7 @@ IME.prototype = {
 			if (this.inputPhase.length > 0) {
 				// clean the pagination offset
 				this.offset = 0;
-				this.activeCandidateIndex = 2;
+//				this.activeCandidateIndex = 2;
 				if (this.cached.length > 0) {
 					// pop one and unshift it to this.inputPhase
 					this.inputPhase = this.cached.pop() + this.inputPhase;
@@ -313,14 +311,14 @@ IME.prototype = {
 		// clean the pagination offset
 		//this.offset = 0;
 		var key = e.keyCode;
-			if (this.inArray(key, this.selectingKeys)) {
+			if (this.hasCandidate && this.inArray(key, this.selectingKeys)) {
 				// choose from select list
-				if (this.inputPhase.length > 0) {
+//				if (this.inputPhase.length > 0) {
 					if (this.holdInput) {
 						e.returnValue = false;
 						return false;
 					}
-					if (this.hasCandidate) {
+//					if () {
 //						if (key === this.selectingKeys[0]) {
 //							this.phaseSelected(seqMap[this.activeCandidateIndex]);
 ////							if(this.type == "wb") {
@@ -350,30 +348,45 @@ IME.prototype = {
 						}
 						this.phaseSelected(selectIndex);
 						this.update();
-					} else {
-						// there is no cadidates, but the inputPhase is not
-						// empty, just push it out
-//						if((this.inputPhase == "ustudy" && this.type == "py") || (this.inputPhase == "zstu" && this.type == "wb")) {
-//							this.toggleStudyMode();
-//							this.getCandidatesFalse();
-//							this.inputPhase = "";
-//							e.returnValue = false;
-//							return false;
-//						} else {
-								this.candidates.push(this.inputPhase.substring(1));
-								this.sendResult(this.inputPhase.substring(1));
-							this.inputPhase = '';
-							this.offset = 0;
-							this.activeCandidateIndex = 2;
-							this.update();
-//						}
-					}
-				} else {
-					return String.fromCharCode(key);
-				}
+//					}
+//					else {
+//						// there is no cadidates, but the inputPhase is not
+//						// empty, just push it out
+////						if((this.inputPhase == "ustudy" && this.type == "py") || (this.inputPhase == "zstu" && this.type == "wb")) {
+////							this.toggleCnMode();
+////							this.getCandidatesFalse();
+////							this.inputPhase = "";
+////							e.returnValue = false;
+////							return false;
+////						} else {
+//								this.candidates.push(this.inputPhase.substring(1));
+//								this.sendResult(this.inputPhase.substring(1));
+//							this.inputPhase = '';
+//							this.offset = 0;
+////							this.activeCandidateIndex = 2;
+//							this.update();
+////						}
+//					}
+//				} else {
+//					return String.fromCharCode(key);
+//				}
 			}else if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 				if (key == this.spliterKey && this.hasCandidate === false) {
-					return String.fromCharCode(key);
+					if(this.cnMode) {
+					var symbol;
+							if(this.singleQuotes) {
+								this.singleQuotes = false;
+								symbol = "’";
+							}else {
+								this.singleQuotes = true;
+								symbol = "‘";
+							}
+							this.sendResult(symbol);
+							e.returnValue = false;
+							return false;
+					}else {
+						return String.fromCharCode(key);
+					}
 				}
 				if (key >= 65 && key <= 90) {
 					// force uppercase to lower case
@@ -415,7 +428,88 @@ IME.prototype = {
 					return false;
 				}
 				// symbol keys
-				return String.fromCharCode(key);
+				if(this.cnMode) {
+					var symbol;
+					switch(key) {
+						case 47:
+							symbol = "∕";
+							break;
+						case 43:
+							symbol = "﹢";
+							break;
+						case 40:
+							symbol = "（";
+							break;
+						case 41:
+							symbol = "）";
+							break;
+						case 37:
+							if(this.angleQuotes) {
+								this.angleQuotes = false;
+								symbol = "》";
+							}else {
+								this.angleQuotes = true;
+								symbol = "《";
+							}
+							break;
+						case 34:
+							if(this.doubleQuotes) {
+								this.doubleQuotes = false;
+								symbol = "”";
+							}else {
+								this.doubleQuotes = true;
+								symbol = "“";
+							}
+							break;
+						case 61:
+							symbol = "﹦";
+							break;
+						case 38:
+							symbol = "﹠";
+							break;
+						case 45:
+							symbol = "•";
+							break;
+						case 36:
+							symbol = "￥";
+							break;
+						case 33:
+							symbol = "！";
+							break;
+						case 58:
+							symbol = "：";
+							break;
+						case 42:
+							symbol = "…";
+							break;
+						case 35:
+							symbol = "﹟";
+							break;
+						case 63:
+							symbol = "？";
+							break;
+						case 59:
+							symbol = "；";
+							break;
+						case 95:
+							symbol = "—";
+							break;
+						case 44:
+							symbol = "，";
+							break;
+						case 64:
+							symbol = "、";
+							break;
+						case 46:
+							symbol = "。";
+							break;
+						default:
+							symbol = String.fromCharCode(key);
+					}
+					this.sendResult(symbol);
+				}else {
+					return String.fromCharCode(key);
+				}
 			}
 			e.returnValue = false;
 	},
@@ -429,7 +523,7 @@ IME.prototype = {
 			this.offset -= this.limit;
 		}else {
 		}
-		this.activeCandidateIndex = 2;
+//		this.activeCandidateIndex = 2;
 		this.update();
 	},
 	pageDown : function() {
@@ -437,7 +531,7 @@ IME.prototype = {
 //			this.offsets.push(this.offset);
 //			this.offset = this.offset + this.pageCount;
 			this.offset += this.limit;
-			this.activeCandidateIndex = 2;
+//			this.activeCandidateIndex = 2;
 			this.update();
 		}
 	},
@@ -463,8 +557,8 @@ IME.prototype = {
 			}
 		}else {
 			this.inputPhase = "";
-			if(selected.v == "zstu") {
-				this.toggleStudyMode();
+			if(selected.v == "ucn") {
+				this.toggleCnMode();
 				this.getCandidatesFalse();
 				return false;
 			}
@@ -475,7 +569,7 @@ IME.prototype = {
 		//this.spaceLock = false;
 		// clean the pagination offset
 		this.offset = 0;
-		this.activeCandidateIndex = 2;
+//		this.activeCandidateIndex = 2;
 	},
 	sendResult : function(str) {
 		if(this.isBrowser) {
@@ -501,9 +595,9 @@ IME.prototype = {
 				break;
 		}
 	},
-	toggleStudyMode : function() {
+	toggleCnMode : function() {
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
-					method : 'toggleStudyMode',
+					method : 'toggleCnMode',
 					parameters : {}
 				});
 	},
@@ -535,12 +629,20 @@ IME.prototype = {
 					parameters : {
 						words : selected
 					}
+//					,
+//					onSuccess : this.putWords.bind(this),
+//					onFailure : this.putWordsFalse.bind(this)
 				});
 		}
 	},
+//	putWords : function(response) {
+//		Mojo.Log.info("response ======> " + Mojo.Log.propertiesAsString(response));
+//	},
+//	putWordsFalse : function(response) {
+//		Mojo.Log.info("response.errorText ======> " + response.errorText);
+//	},
 	update : function() {
 		var query = this.inputPhase + "";
-		Mojo.Log.info("query ======> " + query);
 		this.holdInput = true;
 		if(query.length > 0) {
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
@@ -557,7 +659,7 @@ IME.prototype = {
 			this.getCandidatesFalse();
 		}
 	},
-	getCandidatesFalse : function() {
+	getCandidatesFalse : function(response) {
 		this.holdInput = false;
 		this.sendResult(this.selected.join(''));
 		this.updateRank();
@@ -566,18 +668,15 @@ IME.prototype = {
 		this.selected = [];
 		this.selectedCandidate = [];
 		this.offset = 0;
-		this.activeCandidateIndex = 2;
+//		this.activeCandidateIndex = 2;
 		this.canvas.hide();
-		if(!this.isBrowser) {
-			//this.setCursorStatusPos();
-		}
 	},
 	getCandidates : function(response) {
 		this.holdInput = false;
 		this.time = response.time;
 		this.searched = response.fixed;
 		this.hasPage = ! (response.isEnd);
-		this.studyMode = response.studyMode;
+		this.cnMode = response.cnMode;
 		if (response.words.length > 0) {
 				this.candidates = response.words;
 				this.hasCandidate = true;
@@ -589,40 +688,40 @@ IME.prototype = {
 				this.selected = [];
 				this.selectedCandidate = [];
 				this.offset = 0;
-				this.activeCandidateIndex = 2;
+//				this.activeCandidateIndex = 2;
 				this.canvas.hide();
 		}
 	},
-	sortArray : function() {
-		var candidates = [];
-		if (!this.candidates) {
-			candidates[2] = this.inputPhase
-					.substring(1, this.inputPhase.length);
-			return candidates;
-		}
-		candidates[2] = this.candidates[0].v;
-		if (this.candidates[1]) {
-			candidates[1] = this.candidates[1].v;
-		} else {
-			candidates[1] = '';
-		}
-		if (this.candidates[2]) {
-			candidates[3] = this.candidates[2].v;
-		} else {
-			candidates[3] = '';
-		}
-		if (this.candidates[3]) {
-			candidates[0] = this.candidates[3].v;
-		} else {
-			candidates[0] = '';
-		}
-		if (this.candidates[4]) {
-			candidates[4] = this.candidates[4].v;
-		} else {
-			candidates[4] = '';
-		}
-		return candidates;
-	},
+//	sortArray : function() {
+//		var candidates = [];
+//		if (!this.candidates) {
+//			candidates[2] = this.inputPhase
+//					.substring(1, this.inputPhase.length);
+//			return candidates;
+//		}
+//		candidates[2] = this.candidates[0].v;
+//		if (this.candidates[1]) {
+//			candidates[1] = this.candidates[1].v;
+//		} else {
+//			candidates[1] = '';
+//		}
+//		if (this.candidates[2]) {
+//			candidates[3] = this.candidates[2].v;
+//		} else {
+//			candidates[3] = '';
+//		}
+//		if (this.candidates[3]) {
+//			candidates[0] = this.candidates[3].v;
+//		} else {
+//			candidates[0] = '';
+//		}
+//		if (this.candidates[4]) {
+//			candidates[4] = this.candidates[4].v;
+//		} else {
+//			candidates[4] = '';
+//		}
+//		return candidates;
+//	},
 	updateCanvas : function() {
 		//this.inputPinyin = this.inputPhase;
 		// calculate the rest of the inputPhase
@@ -660,7 +759,7 @@ IME.prototype = {
 //			list[i].removeClassName("tabSelectA");
 //			list[i].removeClassName("tabSelectB");
 //			if(i == this.activeCandidateIndex) {
-//				if(this.studyMode) {
+//				if(this.cnMode) {
 //					list[i].addClassName("tabSelectB");
 //				}else {
 //					list[i].addClassName("tabSelectA");
