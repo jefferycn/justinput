@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Get Application Install Directory
+if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
+	INSTDIR=/media/cryptofs/apps
+else
+	INSTDIR=/var
+fi
+
+# install service
+rootfs_open -w
+
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput /usr/palm/frameworks/mojo/
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
+chmod +x /usr/lib/luna/java/justinput.jar
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.jisrv.service /usr/share/dbus-1/system-services/
+chmod +x /usr/share/dbus-1/system-services/com.youjf.jisrv.service
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.com.justinput /etc/event.d/
+
+# a fully hack of framework
+mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework338.js /usr/palm/frameworks/mojo/builtins/
+
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/JustInput.db /usr/palm/frameworks/mojo/justinput/JustInput.db
+
+HackFile="/usr/palm/frameworks/mojo/mojo.js"
+StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
+EndLine=`sed -n "/justinput hack end/=" ${HackFile}`
+if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
+    cp -f ${HackFile} ${HackFile}.old
+    sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
+    mv -f ${HackFile}.tmp ${HackFile}
+fi
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
+
+# hack the mojo.js
+cat mojo_append.js >> ${HackFile}
+
+luna-send -n 1 luna://com.youjf.jisrv/status '{}' >/dev/null 2>&1
+
+exit 0

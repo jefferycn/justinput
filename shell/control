@@ -1,0 +1,9 @@
+Package: com.youjf.justinput
+Version: 1.3.0
+Depends: 
+Section: Chinese
+Architecture: all
+Priority: optional
+Maintainer: Jeffery <i@youjf.com>
+Source: {"Source":"http://youjf.com/files/com.youjf.justinput_1.3.0_all.ipk","Type":"Plugin","Category":"1.4.1"}
+Description: Chinese IME plugin for WebOS by @jefferycn
