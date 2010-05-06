@@ -1,8 +1,6 @@
 // justinput hack start
 window.addEventListener('load', loadingScript, false);
 function loadingScript() {
-	loadJS('PinyingSource');
-	loadJS('PreFixMap');
 	loadJS('ime');
 	loadCSS();
 	if (typeof(Mojo.Service) == "undefined") {
