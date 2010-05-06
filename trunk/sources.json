@@ -7,17 +7,5 @@
 	{
 		"source": "app\/assistants\/help-assistant.js",
 		"scenes": "help"
-	},
-    {
-    	"source": "app\/models\/IME.js"
-	},
-    {
-    	"source": "app\/models\/Database.js"
-	},
-    {
-    	"source": "app\/models\/PreFixMap.js"
-	},
-    {
-    	"source": "app\/models\/PinyingSource.js"
 	}
 ]
