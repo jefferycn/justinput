@@ -32,10 +32,10 @@ if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
     mv -f ${HackFile}.tmp ${HackFile}
 fi
 
-rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
-
 # hack the mojo.js
-cat mojo_append.js >> ${HackFile}
+cat $INSTDIR/usr/palm/applications/com.youjf.justinput/service/mojo_append.js >> ${HackFile}
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
 
 luna-send -n 1 luna://com.youjf.jisrv/status '{}' >/dev/null 2>&1
 
