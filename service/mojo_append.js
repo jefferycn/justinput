@@ -13,13 +13,13 @@ function loadingScript() {
 var timePress = 0;
 var ime = undefined;
 document.onkeydown = function(event) {
-	if (event.keyCode == 231 || event.keyCode == 179) {
+	if (event.keyCode == 57575 || event.keyCode == 179) {
 		if (timePress == 0) {
 			timePress++;
 			setTimeout(cleanTimer, 900);
 		} else {
 			if (typeof(ime) == "undefined") {
-				ime = new IME();
+				ime = new IME(false);
 			} else {
 				ime.toggleIme();
 			}
