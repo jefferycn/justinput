@@ -5,5 +5,5 @@ Section: Chinese
 Architecture: all
 Priority: optional
 Maintainer: Jeffery <i@youjf.com>
-Source: {"Source":"http://youjf.com/files/com.youjf.justinput_1.3.0_all.ipk","Type":"Plugin","Category":"1.4.1"}
+Source: {"Source":"http://code.google.com/p/justinput/source/browse/","Feed":"youjf.com","Type":"Application","Category":"1.4.1"}
 Description: Chinese IME plugin for WebOS by @jefferycn
