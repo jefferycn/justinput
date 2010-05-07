@@ -18,6 +18,7 @@ IME.prototype = {
 	spliterKey : 39,
 	lastestKey : 0,
 	selectingKeys : [],
+	deleteKeys : [],
 	// z x c v b n m
 	// [90, 88, 67, 86, 66, 78, 77] [122, 120, 99, 118, 98, 110, 109] [101, 114, 116, 100, 102, 103]
 	holdInput : false,
@@ -371,7 +372,28 @@ IME.prototype = {
 //				} else {
 //					return String.fromCharCode(key);
 //				}
-			}else if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
+			} else if (this.hasCandidate && this.inArray(key, this.deleteKeys)) {
+					if (this.holdInput) {
+						e.returnValue = false;
+						return false;
+					}
+						var deleteIndex = this.deleteKeys.indexOf(key);
+						if(this.candidates.length == 1) {
+                            if(deleteIndex > 0) {
+						        e.returnValue = false;
+						        return false;
+                            }
+                            this.offset -= this.limit;
+						}
+						if(this.candidates.length == 2) {
+                            if(deleteIndex == 2) {
+						        e.returnValue = false;
+						        return false;
+                            }
+						}
+						this.phaseDeleted(deleteIndex);
+						this.update();
+            }else if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 				if (key == this.spliterKey && this.hasCandidate === false) {
 					if(this.cnMode) {
 					var symbol;
@@ -536,6 +558,16 @@ IME.prototype = {
 			this.update();
 		}
 	},
+    phaseDeleted : function(index) {
+        var selected = this.candidates[index];
+        var id = selected.id;
+        var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'delete',
+					parameters : {
+						id : id
+					}
+				});
+    },
 	phaseSelected : function(index) {
 		var selected = this.candidates[index];
 		var searchString = "";
