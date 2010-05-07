@@ -8,8 +8,6 @@ else
 fi
 
 # install service
-rootfs_open -w
-
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput /usr/palm/frameworks/mojo/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
 chmod +x /usr/lib/luna/java/justinput.jar
