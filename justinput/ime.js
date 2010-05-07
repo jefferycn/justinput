@@ -18,7 +18,7 @@ IME.prototype = {
 	spliterKey : 39,
 	lastestKey : 0,
 	selectingKeys : [],
-	deleteKeys : [],
+	deleteKeys : [49, 50, 51],
 	// z x c v b n m
 	// [90, 88, 67, 86, 66, 78, 77] [122, 120, 99, 118, 98, 110, 109] [101, 114, 116, 100, 102, 103]
 	holdInput : false,
@@ -395,7 +395,7 @@ IME.prototype = {
 						this.update();
             }else if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 				if (key == this.spliterKey && this.hasCandidate === false) {
-					if(this.cnMode) {
+					if(this.cnMode && this.isBrowser == false) {
 					var symbol;
 							if(this.singleQuotes) {
 								this.singleQuotes = false;
@@ -451,7 +451,7 @@ IME.prototype = {
 					return false;
 				}
 				// symbol keys
-				if(this.cnMode) {
+				if(this.cnMode && this.isBrowser == false) {
 					var symbol;
 					switch(key) {
 						case 47:
@@ -817,7 +817,7 @@ IME.prototype = {
 		
 		var minLength;
 		if(wordLength > 3)	{
-			minLength = 128 + (wordLength - 3) * 16;
+			minLength = 128 + (wordLength - 3) * 21;
 		}else {
 			minLength = 128;
 		}
