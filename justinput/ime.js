@@ -312,6 +312,7 @@ IME.prototype = {
 		}
 		// clean the pagination offset
 		//this.offset = 0;
+		var symbol;
 		var key = e.keyCode;
 			if (this.hasCandidate && this.inArray(key, this.selectingKeys)) {
 				// choose from select list
@@ -395,8 +396,7 @@ IME.prototype = {
 						this.update();
             }else if (key >= 97 && key <= 122 || key == this.spliterKey || key >= 65 && key <= 90) {
 				if (key == this.spliterKey && this.hasCandidate === false) {
-					if(this.cnMode && this.isBrowser == false) {
-					var symbol;
+					if(this.cnMode && this.isBrowser === false) {
 							if(this.singleQuotes) {
 								this.singleQuotes = false;
 								symbol = "’";
@@ -451,8 +451,7 @@ IME.prototype = {
 					return false;
 				}
 				// symbol keys
-				if(this.cnMode && this.isBrowser == false) {
-					var symbol;
+				if(this.cnMode && this.isBrowser === false) {
 					switch(key) {
 						case 47:
 							symbol = "∕";
@@ -654,6 +653,7 @@ IME.prototype = {
 		if(selected.length < 1) {
 			return false;
 		}
+		var request;
 		if(selected.length == 1) {
 			var l = selected[0].l;
 			if(l === 0) {
@@ -663,7 +663,7 @@ IME.prototype = {
 			var s = selected[0].s;
 			var r = selected[0].r;
 			
-			var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+			request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'update',
 					parameters : {
 						id : id,
@@ -672,7 +672,7 @@ IME.prototype = {
 					}
 				});
 		}else {
-			var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+			request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'put',
 					parameters : {
 						words : selected
