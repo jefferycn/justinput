@@ -7,12 +7,22 @@ else
 	INSTDIR=/var
 fi
 
-rootfs_open -w
 rm -rf /usr/palm/frameworks/mojo/justinput/
 rm -f /usr/lib/luna/java/justinput.jar
 rm -f /usr/share/dbus-1/system-services/com.youjf.jisrv.service
 rm -f /etc/event.d/com.youjf.com.justinput
-mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js.jeffery" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework330.js.jeffery" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
+fi
 
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
