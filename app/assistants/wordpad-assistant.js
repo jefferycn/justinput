@@ -13,6 +13,31 @@ WordpadAssistant.prototype.setup = function() {
 	this.controller.setupWidget(Mojo.Menu.appMenu, {
 				omitDefaultItems : true
 			}, this.appMenuModel);
+			this.showDashboard();
+}
+
+WordpadAssistant.prototype.showDashboard = function() {
+	var stageName = "JustDash";
+
+        var dashStage = Mojo.Controller.appController.getStageProxy(stageName);
+
+        if (dashStage) {
+        	return;
+                //dashStage.delegateToSceneAssistant("update");
+        } else {
+                var f = function(stageController){
+                        stageController.pushScene({name: 'dash',
+					       		   		   sceneTemplate: "wordpad/dash-scene"},
+										   {
+										 	  message: "I'm a dashboard stage.",
+											  stage: stageName
+										   });
+                };
+                Mojo.Controller.appController.createStageWithCallback({
+                                name: stageName,
+                                                lightweight: true
+                                }, f, 'dashboard');
+        }
 }
 
 WordpadAssistant.prototype.handleCommand = function(event) {
