@@ -10,20 +10,25 @@ function loadingScript() {
 
 var timePress = 0;
 var ime = undefined;
+var orange = false;
 document.onkeydown = function(event) {
-	if (event.keyCode == 57575 || event.keyCode == 231 || event.keyCode == 179) {
-		if (timePress == 0) {
-			timePress++;
-			setTimeout(cleanTimer, 900);
-		} else {
-			if (typeof(ime) == "undefined") {
-				ime = new IME(false);
-			} else {
-				ime.toggleIme();
-			}
-		}
+	if (orange == true && event.keyCode == 32) {
+        if (typeof(ime) == "undefined") {
+            ime = new IME(false);
+        } else {
+            ime.toggleIme();
+        }
 		event.returnValue = false;
 	}
+    if(event.keyCode == 129) {
+        orange = true;
+    }
+}
+
+document.onkeyup = function(event) {
+    if(event.keyCode == 129) {
+        orange = false;
+    }
 }
 
 function loadJS(name) {
