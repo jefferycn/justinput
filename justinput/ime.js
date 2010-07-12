@@ -3,6 +3,7 @@ var handlerBox = {};
 var IME = Class.create();
 
 IME.prototype = {
+	type: 1,
 	canvas : undefined,
 	board : undefined,
 	candidate : undefined,
@@ -11,6 +12,7 @@ IME.prototype = {
 	targetType : '',
 	active : false,
 	cnMode : false,
+	studyMode : false,
 	targetElement : undefined,
 	limit : 3,
 	pageDownKey : 44,
@@ -55,7 +57,7 @@ IME.prototype = {
 //		this.activeCandidateIndex = 2;
 		//this.allPinyin = new PrefixMap(PinyingSource.table);
 		this.toggleIme();
-		this.setCnMode();
+		this.initSrv();
 	},
 	inArray : function(v, array) {
 		if (Object.isArray(array) === false) {
@@ -411,29 +413,38 @@ IME.prototype = {
 						return String.fromCharCode(key);
 					}
 				}
+				if(this.type > 1 && key == this.spliterKey) {
+					return String.fromCharCode(key);
+				}
 				if (key >= 65 && key <= 90) {
 					// force uppercase to lower case
 					key += 32;
 				}
-//			if (this.type == "wb") {
-//				if (this.inputPhase.length >= 5) {
-//					// send the active word
-//					this.phaseSelected(seqMap[this.activeCandidateIndex]);
-//					this.getCandidatesFalse();
-//					this.inputPhase = String.fromCharCode(key);
-//					this.update();
-//					e.returnValue = false;
-//					return false;
-//				}else {
-//					this.inputPhase += String.fromCharCode(key);
-//				}
-//			}else {
+			if (this.type == 2) {
+				//wb
+				if (this.inputPhase.length >= 4) {
+					// send the active word
+					var selectIndex = 1;
+					if(this.candidates.length == 1) {
+						selectIndex = 0;
+					}
+					this.phaseSelected(selectIndex);
+					this.getCandidatesFalse();
+					this.inputPhase = String.fromCharCode(key);
+					this.update();
+					e.returnValue = false;
+					return false;
+				}else {
+					this.inputPhase += String.fromCharCode(key);
+					this.update();
+				}
+			}else {
 				if(!(this.lastestKey == key && this.spliterKey == key)) {
 					this.lastestKey = key;
 					this.inputPhase += String.fromCharCode(key);
 					this.update();
 				}
-//			}
+			}
 				//this.spaceLock = false;
 //			}else if(this.hasCandidate && e.keyCode == this.spaceKey) {
 //				this.toggleLock();
@@ -569,6 +580,9 @@ IME.prototype = {
     },
 	phaseSelected : function(index) {
 		var selected = this.candidates[index];
+		this.selected.push(selected.v);
+		this.selectedCandidate.push(selected);
+		if(this.type == 1) {
 		var searchString = "";
 		for(var i = 0;i < selected.l;i ++) {
 			searchString += this.searched.shift() + "";
@@ -589,15 +603,16 @@ IME.prototype = {
 			}
 		}else {
 			this.inputPhase = "";
-			if(selected.v == "ucn") {
-				this.toggleCnMode();
-				this.getCandidatesFalse();
-				return false;
-			}
+//			if(selected.v == "ucn") {
+//				this.toggleCnMode();
+//				this.getCandidatesFalse();
+//				return false;
+//			}
 		}
 		this.cached.push(searchString);
-		this.selected.push(selected.v);
-		this.selectedCandidate.push(selected);
+		}else {
+			this.inputPhase = "";
+		}
 		//this.spaceLock = false;
 		// clean the pagination offset
 		this.offset = 0;
@@ -638,15 +653,17 @@ IME.prototype = {
 					parameters : {}
 				});
 	},
-	setCnMode : function() {
+	initSrv : function() {
 		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'status',
 					parameters : {},
-					onSuccess : this.setCnModeSuccess.bind(this)
+					onSuccess : this.initSrvSuccess.bind(this)
 				});
 	},
-	setCnModeSuccess : function(response) {
+	initSrvSuccess : function(response) {
 		this.cnMode = response.cnMode;
+		this.type = response.ime;
+		this.studyMode = response.studyMode;
 	},
 	updateRank : function() {
 		var selected = this.selectedCandidate;
@@ -725,6 +742,8 @@ IME.prototype = {
 		this.searched = response.fixed;
 		this.hasPage = ! (response.isEnd);
 		this.cnMode = response.cnMode;
+		this.studyMode = response.studyMode;
+		this.type = response.type;
 		if (response.words.length > 0) {
 				this.candidates = response.words;
 				this.hasCandidate = true;
@@ -775,7 +794,12 @@ IME.prototype = {
 		// calculate the rest of the inputPhase
 //		if (this.inputPinyin.length > 0) {
 		//<li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li><li class="tabUnselect"></li>
-		var workspace = this.selected.join("") + this.searched.join("'");
+		var workspace;
+		if(this.type == 1) {
+			workspace = this.selected.join("") + this.searched.join("'");
+		}else {
+			workspace = this.inputPhase;
+		}
 //		}
 		//var candidates = this.sortArray();
 		this.board.update(workspace);

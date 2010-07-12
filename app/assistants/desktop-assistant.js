@@ -1,0 +1,165 @@
+function DesktopAssistant() {
+
+}
+
+DesktopAssistant.prototype.setup = function() {
+	this.appMenuModel = {
+		visible : true,
+		items : [Mojo.Menu.editItem, {
+					label : $L('Donate'),
+					command : 'donate'
+				},{
+					label : $L('Help'),
+					command : 'help'
+				}]
+	};
+	this.controller.setupWidget(Mojo.Menu.appMenu, {
+				omitDefaultItems : true
+			}, this.appMenuModel);
+			
+			
+	var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'status',
+					parameters : {},
+					onSuccess : this.initSrvSuccess.bindAsEventListener(this)
+				});
+	
+	this.controller.setupWidget('study-toggle', {unstyled:true}, this.studyModel = {});
+	this.controller.setupWidget('background-toggle', {unstyled:true}, this.backgModel = {});
+	this.controller.setupWidget('punctuation-toggle', {unstyled:true}, this.punctModel = {});
+
+	var work = [
+  	{label:$L('拼音'), value:"1"},
+  	{label:$L('五笔'), value:"2"},
+  	{label:$L('仓颉'), value:"3"},
+  	{label:$L('速成'), value:"4"},
+  	{label:$L('日文'), value:"5"}
+  	];
+  	
+	this.controller.setupWidget('ime-selector', {label: $L('输入法'), choices: work}, this.imeModel = {});
+	
+	this.controller.listen("ime-selector", Mojo.Event.propertyChange, this.handleImeChange.bind(this));
+	this.controller.listen("study-toggle", Mojo.Event.propertyChange, this.handleStuToggle.bind(this));
+	this.controller.listen("background-toggle", Mojo.Event.propertyChange, this.handleBacToggle.bind(this));
+	this.controller.listen("punctuation-toggle", Mojo.Event.propertyChange, this.handlePunToggle.bind(this));
+}
+
+
+DesktopAssistant.prototype.initSrvSuccess = function(response) {
+	this.studyModel.value = response.studyMode;
+	this.controller.modelChanged(this.studyModel);
+	this.backgModel.value = response.backgroundMode;
+	this.controller.modelChanged(this.backgModel);
+	if(this.backgModel.value) {
+		this.showDashboard();
+	}
+	this.punctModel.value = response.cnMode;
+	this.controller.modelChanged(this.punctModel);
+	this.imeModel.value = response.ime;
+	this.controller.modelChanged(this.imeModel);
+}
+
+DesktopAssistant.prototype.handleImeChange = function() {
+	var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'change',
+					parameters : {ime: this.imeModel.value},
+					onSuccess : this.handleImeChangeSuccess.bindAsEventListener(this)
+				});
+}
+
+DesktopAssistant.prototype.handleImeChangeSuccess = function(response) {
+	if(response.ime > 0 && response.ime < 5) {
+		this.imeModel.value = response.ime;
+	}
+	this.controller.modelChanged(this.imeModel);
+}
+
+DesktopAssistant.prototype.handleStuToggle = function() {
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'toggleStudyMode',
+					parameters : {},
+					onSuccess : this.handleStuToggleSuccess.bindAsEventListener(this)
+				});
+}
+
+DesktopAssistant.prototype.handleStuToggleSuccess = function(response) {
+	if(this.studyModel.value != response.studyMode) {
+		this.studyModel.value = response.studyMode;
+	}
+	this.controller.modelChanged(this.studyModel);
+}
+
+DesktopAssistant.prototype.handleBacToggle = function() {
+	var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'toggleBackgroundModeMode',
+					parameters : {},
+					onSuccess : this.handleBacToggleSuccess.bindAsEventListener(this)
+				});
+}
+
+DesktopAssistant.prototype.handleBacToggleSuccess = function(response) {
+	if(this.backgModel.value != response.backgroundMode) {
+		this.backgModel.value = response.backgroundMode;
+	}
+	if(!response.backgroundMode) {
+        var dashStage = Mojo.Controller.appController.getStageProxy("JustDash");
+        dashStage.window.close();
+	}else {
+		this.showDashboard();
+	}
+	this.controller.modelChanged(this.backgModel);
+}
+
+DesktopAssistant.prototype.handlePunToggle = function() {
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'toggleCnMode',
+					parameters : {},
+					onSuccess : this.handlePunToggleSuccess.bindAsEventListener(this)
+				});
+}
+
+DesktopAssistant.prototype.handlePunToggleSuccess = function(response) {
+	if(this.punctModel.value != response.cnMode) {
+		this.punctModel.value = response.cnMode;
+	}
+	this.controller.modelChanged(this.punctModel);
+}
+
+DesktopAssistant.prototype.showDashboard = function() {
+	var stageName = "JustDash";
+
+        var dashStage = Mojo.Controller.appController.getStageProxy(stageName);
+
+        if (dashStage) {
+        	return;
+                //dashStage.delegateToSceneAssistant("update");
+        } else {
+            var f = function(stageController){
+            	stageController.pushScene({name: 'dash',
+					sceneTemplate: "desktop/dash-scene"},
+					{
+						message: "I'm a dashboard stage.",
+						stage: stageName
+					});
+            };
+            Mojo.Controller.appController.createStageWithCallback({name: stageName,lightweight: true}, f, 'dashboard');
+        }
+}
+
+DesktopAssistant.prototype.handleCommand = function(event) {
+	if (event.type == Mojo.Event.command) {
+		var appController = Mojo.Controller.getAppController().getActiveStageController();
+		if (event.command == 'help') {
+    		appController.pushScene('help');
+		}
+		if (event.command == 'donate') {
+    		appController.pushScene('donate');
+		}
+	}
+}
+
+DesktopAssistant.prototype.deactivate = function(event) {
+}
+
+DesktopAssistant.prototype.cleanup = function(event) {
+}
