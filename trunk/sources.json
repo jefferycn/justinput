@@ -2,11 +2,15 @@
     {"source": "app\/assistants\/app-assistant.js"},
     {"source": "app\/assistants\/dash-assistant.js"},
     {
-        "source": "app\/assistants\/wordpad-assistant.js",
-        "scenes": "wordpad"
+        "source": "app\/assistants\/desktop-assistant.js",
+        "scenes": "desktop"
     },
 	{
 		"source": "app\/assistants\/help-assistant.js",
 		"scenes": "help"
+	},
+	{
+		"source": "app\/assistants\/donate-assistant.js",
+		"scenes": "donate"
 	}
 ]
