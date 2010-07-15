@@ -24,6 +24,10 @@ if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery" ]; 
     mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
 fi
 
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js
+fi
+
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
 EndLine=`sed -n "/justinput hack end/=" ${HackFile}`

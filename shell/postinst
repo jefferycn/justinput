@@ -32,7 +32,10 @@ if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
     mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework338.js /usr/palm/frameworks/mojo/builtins/
 fi
 
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/JustInput.db /usr/palm/frameworks/mojo/justinput/JustInput.db
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery
+    mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework347.js /usr/palm/frameworks/mojo/builtins/
+fi
 
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`

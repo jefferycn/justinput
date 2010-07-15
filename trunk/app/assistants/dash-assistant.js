@@ -3,8 +3,9 @@ function DashAssistant(argFromPusher) {
 }
 
 DashAssistant.prototype.setup = function() {
-	this.controller.get('info').update(this.passedArgument.message);
-	this.controller.listen(this.controller.get('info'), Mojo.Event.tap, this.handleApp.bind(this));
+	this.controller.get('title').update(this.passedArgument.title);
+	this.controller.get('content').update(this.passedArgument.message);
+	this.controller.listen(this.controller.get('justin_dashboard'), Mojo.Event.tap, this.handleApp.bind(this));
 }
 
 DashAssistant.prototype.handleApp = function() {
