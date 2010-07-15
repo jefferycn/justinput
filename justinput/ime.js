@@ -132,6 +132,7 @@ IME.prototype = {
 			var status = '<div id="_ime_status" style="position: absolute;z-index:99999999;"><img src="/usr/palm/frameworks/mojo/justinput/status-available-dark.png"></div>';
 			document.body.insert({after : status});
 			this.status = document.getElementById('_ime_status');
+			
 			this.canvas = document.getElementById('_ime_canvas');
 			this.board = document.getElementById('_ime_board');
 			this.candidate = document.getElementById('_ime_candidate');
@@ -420,9 +421,16 @@ IME.prototype = {
 					// force uppercase to lower case
 					key += 32;
 				}
-			if (this.type == 2) {
-				//wb
-				if (this.inputPhase.length >= 4) {
+			if (this.inArray(this.type, [2, 3, 4])) {
+				var maxLength;
+				if(this.type == 2) {
+					maxLength = 4;
+				}else if(this.type == 3) {
+					maxLength = 5;
+				}else {
+					maxLength = 2;
+				}
+				if (this.inputPhase.length >= maxLength) {
 					// send the active word
 					var selectIndex = 1;
 					if(this.candidates.length == 1) {
@@ -441,6 +449,9 @@ IME.prototype = {
 			}else {
 				if(!(this.lastestKey == key && this.spliterKey == key)) {
 					this.lastestKey = key;
+					this.inputPhase += String.fromCharCode(key);
+					this.update();
+				}else {
 					this.inputPhase += String.fromCharCode(key);
 					this.update();
 				}
@@ -464,12 +475,12 @@ IME.prototype = {
 				// symbol keys
 				if(this.cnMode && this.isBrowser === false) {
 					switch(key) {
-						case 47:
-							symbol = "∕";
-							break;
-						case 43:
-							symbol = "﹢";
-							break;
+//						case 47:
+//							symbol = "∕";
+//							break;
+//						case 43:
+//							symbol = "﹢";
+//							break;
 						case 40:
 							symbol = "（";
 							break;
@@ -485,24 +496,24 @@ IME.prototype = {
 								symbol = "《";
 							}
 							break;
-						case 34:
-							if(this.doubleQuotes) {
-								this.doubleQuotes = false;
-								symbol = "”";
-							}else {
-								this.doubleQuotes = true;
-								symbol = "“";
-							}
-							break;
-						case 61:
-							symbol = "﹦";
-							break;
-						case 38:
-							symbol = "﹠";
-							break;
-						case 45:
-							symbol = "•";
-							break;
+//						case 34:
+//							if(this.doubleQuotes) {
+//								this.doubleQuotes = false;
+//								symbol = "”";
+//							}else {
+//								this.doubleQuotes = true;
+//								symbol = "“";
+//							}
+//							break;
+//						case 61:
+//							symbol = "﹦";
+//							break;
+//						case 38:
+//							symbol = "﹠";
+//							break;
+//						case 45:
+//							symbol = "•";
+//							break;
 						case 36:
 							symbol = "￥";
 							break;
@@ -512,21 +523,21 @@ IME.prototype = {
 						case 58:
 							symbol = "：";
 							break;
-						case 42:
-							symbol = "…";
-							break;
-						case 35:
-							symbol = "﹟";
-							break;
+//						case 42:
+//							symbol = "…";
+//							break;
+//						case 35:
+//							symbol = "﹟";
+//							break;
 						case 63:
 							symbol = "？";
 							break;
 						case 59:
 							symbol = "；";
 							break;
-						case 95:
-							symbol = "—";
-							break;
+//						case 95:
+//							symbol = "—";
+//							break;
 						case 44:
 							symbol = "，";
 							break;
@@ -666,6 +677,9 @@ IME.prototype = {
 		this.studyMode = response.studyMode;
 	},
 	updateRank : function() {
+		if(this.studyMode === false) {
+			return false;
+		}
 		var selected = this.selectedCandidate;
 		if(selected.length < 1) {
 			return false;
@@ -679,7 +693,7 @@ IME.prototype = {
 			var id = selected[0].id;
 			var s = selected[0].s;
 			var r = selected[0].r;
-			
+			//console.log("do a update");
 			request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'update',
 					parameters : {
@@ -689,6 +703,7 @@ IME.prototype = {
 					}
 				});
 		}else {
+			//console.log("do a insert");
 			request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'put',
 					parameters : {

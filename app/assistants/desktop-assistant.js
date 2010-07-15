@@ -44,7 +44,6 @@ DesktopAssistant.prototype.setup = function() {
 	this.controller.listen("punctuation-toggle", Mojo.Event.propertyChange, this.handlePunToggle.bind(this));
 }
 
-
 DesktopAssistant.prototype.initSrvSuccess = function(response) {
 	this.studyModel.value = response.studyMode;
 	this.controller.modelChanged(this.studyModel);
@@ -57,6 +56,50 @@ DesktopAssistant.prototype.initSrvSuccess = function(response) {
 	this.controller.modelChanged(this.punctModel);
 	this.imeModel.value = response.ime;
 	this.controller.modelChanged(this.imeModel);
+	
+	if(!response.sync) {
+		this.checkConnection();
+	}
+}
+
+DesktopAssistant.prototype.registerToServer = function() {
+	this.controller.serviceRequest('palm://com.palm.preferences/systemProperties', {
+		method:"Get",
+		parameters:{"key": "com.palm.properties.nduid" },
+		onSuccess: this.registerToServerSuccess.bind(this)
+	});
+}
+
+DesktopAssistant.prototype.registerToServerSuccess = function(response) {
+	var uuid = response["com.palm.properties.nduid"];
+	var url = "http://youjf.com/justin.php";
+	new Ajax.Request(url, {
+		method: 'post',
+		parameters: {uuid: uuid},
+		onSuccess: function(web) {
+			if(web.responseText == "true") {
+				var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+					method : 'toggleSync',
+					parameters : {}
+				});
+			}
+		}
+	});
+}
+
+DesktopAssistant.prototype.checkConnection = function() {
+	//isInternetConnectionAvailable
+	this.controller.serviceRequest('palm://com.palm.connectionmanager', {
+    	method: 'getstatus',
+    	parameters: {},
+    	onSuccess: this.checkConnectionSuccess.bind(this)
+	});
+}
+
+DesktopAssistant.prototype.checkConnectionSuccess = function(response) {
+	if(response.isInternetConnectionAvailable) {
+		this.registerToServer();
+	}
 }
 
 DesktopAssistant.prototype.handleImeChange = function() {
@@ -138,7 +181,8 @@ DesktopAssistant.prototype.showDashboard = function() {
             	stageController.pushScene({name: 'dash',
 					sceneTemplate: "desktop/dash-scene"},
 					{
-						message: "I'm a dashboard stage.",
+						title: $L('Tap for Settings'),
+						message: $L('点击打开设置面板'),
 						stage: stageName
 					});
             };
