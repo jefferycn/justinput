@@ -1,5 +1,5 @@
 function DesktopAssistant() {
-
+	this.choices = [];
 }
 
 DesktopAssistant.prototype.setup = function() {
@@ -28,15 +28,13 @@ DesktopAssistant.prototype.setup = function() {
 	this.controller.setupWidget('background-toggle', {unstyled:true}, this.backgModel = {});
 	this.controller.setupWidget('punctuation-toggle', {unstyled:true}, this.punctModel = {});
 
-	var work = [
-  	{label:$L('拼音'), value:"1"},
+	var choices = [{label:$L('拼音'), value:"1"},
   	{label:$L('五笔'), value:"2"},
   	{label:$L('仓颉'), value:"3"},
   	{label:$L('速成'), value:"4"},
-  	{label:$L('日文'), value:"5"}
-  	];
+  	{label:$L('日文'), value:"5"}];
   	
-	this.controller.setupWidget('ime-selector', {label: $L('输入法'), choices: work}, this.imeModel = {});
+	this.controller.setupWidget('ime-selector', {label: $L('输入法'), choices: choices}, this.imeModel = {});
 	
 	this.controller.listen("ime-selector", Mojo.Event.propertyChange, this.handleImeChange.bind(this));
 	this.controller.listen("study-toggle", Mojo.Event.propertyChange, this.handleStuToggle.bind(this));
@@ -45,6 +43,7 @@ DesktopAssistant.prototype.setup = function() {
 }
 
 DesktopAssistant.prototype.initSrvSuccess = function(response) {
+	this.choices = response.choices;
 	this.studyModel.value = response.studyMode;
 	this.controller.modelChanged(this.studyModel);
 	this.backgModel.value = response.backgroundMode;
@@ -61,6 +60,18 @@ DesktopAssistant.prototype.initSrvSuccess = function(response) {
 		this.checkConnection();
 	}
 }
+
+DesktopAssistant.prototype.inArray = function(v, array) {
+		if (Object.isArray(array) === false) {
+			return false;
+		}
+		for (var i = 0; i < array.length; i++) {
+			if (v == array[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 DesktopAssistant.prototype.registerToServer = function() {
 	this.controller.serviceRequest('palm://com.palm.preferences/systemProperties', {
@@ -103,11 +114,20 @@ DesktopAssistant.prototype.checkConnectionSuccess = function(response) {
 }
 
 DesktopAssistant.prototype.handleImeChange = function() {
-	var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
+	if(this.inArray(this.imeModel.value, this.choices)) {
+		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
 					method : 'change',
 					parameters : {ime: this.imeModel.value},
 					onSuccess : this.handleImeChangeSuccess.bindAsEventListener(this)
 				});
+	}else {
+		this.controller.showAlertDialog({
+			onChoose: function (value) {},
+			title: $L('Selected IME not installed'),
+			message: $L('没有安装所选择的输入法'),
+			choices: [ {label: 'OK', value: 'OK', type: 'color'} ]
+		});
+	}
 }
 
 DesktopAssistant.prototype.handleImeChangeSuccess = function(response) {
