@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Get Application Install Directory
+if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
+	INSTDIR=/media/cryptofs/apps
+else
+	INSTDIR=/var
+fi
+
+HackFile="/usr/palm/frameworks/mojo/mojo.js"
+StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
+EndLine=`sed -n "/justinput hack end/=" ${HackFile}`
+if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
+    cp -f ${HackFile} ${HackFile}.old
+    sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
+    mv -f ${HackFile}.tmp ${HackFile}
+fi
+
+# hack the mojo.js
+cat $INSTDIR/usr/palm/applications/com.youjf.justinput/service/mojo_append.js >> ${HackFile}
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
+
+luna-send -n 1 luna://com.youjf.jisrv/status '{}' >/dev/null 2>&1
+
+exit 0

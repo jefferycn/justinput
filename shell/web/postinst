@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Get Application Install Directory
+if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
+	INSTDIR=/media/cryptofs/apps
+else
+	INSTDIR=/var
+fi
+
+# a fully hack of framework
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js.jeffery
+    mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework200_72.js /usr/palm/frameworks/mojo/builtins/
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework330.js" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js.jeffery
+    mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework330.js /usr/palm/frameworks/mojo/builtins/
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery
+    mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework338.js /usr/palm/frameworks/mojo/builtins/
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js" ]; then
+    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery
+    mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/palmInitFramework347.js /usr/palm/frameworks/mojo/builtins/
+fi
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
+
+exit 0

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Get Application Install Directory
+if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
+	INSTDIR=/media/cryptofs/apps
+else
+	INSTDIR=/var
+fi
+
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/jp.db /usr/palm/frameworks/mojo/justinput/db/
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/config.db /usr/palm/frameworks/mojo/justinput/db/
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/
+
+exit 0
