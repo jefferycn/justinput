@@ -8,7 +8,6 @@ else
 fi
 
 # install service
-rm -rf /usr/palm/frameworks/mojo/justinput/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/ /usr/palm/frameworks/mojo/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
 chmod +x /usr/lib/luna/java/justinput.jar
