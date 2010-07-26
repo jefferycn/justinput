@@ -1,5 +1,5 @@
 #!/bin/sh
-
+mount -o remount,rw /
 # Get Application Install Directory
 if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 	INSTDIR=/media/cryptofs/apps

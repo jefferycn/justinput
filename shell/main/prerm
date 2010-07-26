@@ -1,5 +1,5 @@
 #!/bin/sh
-
+mount -o remount,rw /
 # Get Application Install Directory
 if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 	INSTDIR=/media/cryptofs/apps
@@ -36,5 +36,7 @@ if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
     sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
     mv -f ${HackFile}.tmp ${HackFile}
 fi
+
+killall -9 java
 
 exit 0

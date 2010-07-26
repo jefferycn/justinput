@@ -1,5 +1,5 @@
 #!/bin/sh
-
+mount -o remount,rw /
 # Get Application Install Directory
 if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 	INSTDIR=/media/cryptofs/apps
@@ -39,5 +39,5 @@ fi
 
 rm -rf $INSTDIR/clean_justin/
 
-reboot
+killall -9 java
 exit 0

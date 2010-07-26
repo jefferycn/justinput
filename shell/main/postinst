@@ -1,5 +1,5 @@
 #!/bin/sh
-
+mount -o remount,rw /
 # Get Application Install Directory
 if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 	INSTDIR=/media/cryptofs/apps
@@ -10,9 +10,7 @@ fi
 # install service
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/ /usr/palm/frameworks/mojo/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
-chmod +x /usr/lib/luna/java/justinput.jar
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.jisrv.service /usr/share/dbus-1/system-services/
-chmod +x /usr/share/dbus-1/system-services/com.youjf.jisrv.service
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.com.justinput /etc/event.d/
 
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
@@ -29,6 +27,6 @@ cat $INSTDIR/usr/palm/applications/com.youjf.justinput/service/mojo_append.key.j
 
 rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
 
-luna-send -n 1 luna://com.youjf.jisrv/status '{}' >/dev/null 2>&1
+killall -9 java
 
 exit 0

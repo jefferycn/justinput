@@ -1,2 +1,4 @@
 #!/bin/sh
 
+mount -o remount,rw /
+rm -f /usr/palm/frameworks/mojo/justinput/db/py.db
