@@ -46,7 +46,12 @@ DesktopAssistant.prototype.setup = function() {
 
 DesktopAssistant.prototype.initSrvSuccess = function(response) {
 	this.choices = response.choices;
-	this.studyModel.value = response.studyMode;
+	if(response.dbMode) {
+		this.studyModel.value = false;
+		this.studyModel.disabled = true;
+	}else {
+		this.studyModel.value = response.studyMode;
+	}
 	this.controller.modelChanged(this.studyModel);
 	this.backgModel.value = response.backgroundMode;
 	this.controller.modelChanged(this.backgModel);
