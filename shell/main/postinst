@@ -8,6 +8,11 @@ else
 fi
 
 # install service
+
+DBPATH=/home/root/.justinput/db/
+mkdir -p $DBPATH
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/config.db $DBPATH
+
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/ /usr/palm/frameworks/mojo/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
 mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.jisrv.service /usr/share/dbus-1/system-services/

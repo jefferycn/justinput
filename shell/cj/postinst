@@ -7,8 +7,11 @@ else
 	INSTDIR=/var
 fi
 
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/cj.db /usr/palm/frameworks/mojo/justinput/db/
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/config.db /usr/palm/frameworks/mojo/justinput/db/
+DBPATH=/home/root/.justinput/db/
+mkdir -p $DBPATH
+
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/cj.db $DBPATH
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/config.db $DBPATH
 
 rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/
 
