@@ -8,27 +8,28 @@ function loadingScript() {
 	}
 }
 
-var timePress = 0;
 var ime = undefined;
-var orange = false;
+var active = false;
 document.onkeydown = function(event) {
-	if (orange == true && event.keyCode == 32) {
+    active == false;
+    if (event.keyCode == 16) {
+        setTimeout(activeTimer, 600);
+    }
+}
+
+document.onkeyup = function(event) {
+    if(active == true && event.keyCode == 16) {
         if (typeof(ime) == "undefined") {
             ime = new IME(false);
         } else {
             ime.toggleIme();
         }
-		event.returnValue = false;
-	}
-    if(event.keyCode == 129) {
-        orange = true;
     }
+    active = false;
 }
 
-document.onkeyup = function(event) {
-    if(event.keyCode == 129) {
-        orange = false;
-    }
+function activeTimer() {
+	active = true;
 }
 
 function loadJS(name) {
@@ -46,7 +47,4 @@ function loadCSS() {
 	document.getElementsByTagName('head').item(0).appendChild(element);
 }
 
-function cleanTimer() {
-	timePress = 0;
-}
 // justinput hack end

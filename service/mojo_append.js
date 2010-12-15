@@ -28,14 +28,14 @@ document.onkeydown = function(event) {
 
 function loadJS(name) {
 	var element = document.createElement('script');
-	element.setAttribute('src', '/usr/palm/frameworks/mojo/justinput/' + name + '.js');
+	element.setAttribute('src', '/home/root/.justinput/' + name + '.js');
 	element.setAttribute('type', 'text/javascript');
 	document.body.appendChild(element);
 }
 
 function loadCSS() {
 	element = document.createElement('link');
-	element.setAttribute('href', '/usr/palm/frameworks/mojo/justinput/canvas.css');
+	element.setAttribute('href', '/home/root/.justinput/canvas.css');
 	element.setAttribute('rel', 'stylesheet');
 	element.setAttribute('type', 'text/css');
 	document.getElementsByTagName('head').item(0).appendChild(element);
