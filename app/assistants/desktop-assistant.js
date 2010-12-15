@@ -27,7 +27,6 @@ DesktopAssistant.prototype.setup = function() {
 	this.controller.setupWidget('study-toggle', {unstyled:true}, this.studyModel = {});
 	this.controller.setupWidget('background-toggle', {unstyled:true}, this.backgModel = {});
 	this.controller.setupWidget('punctuation-toggle', {unstyled:true}, this.punctModel = {});
-	this.controller.setupWidget('database-toggle', {unstyled:true}, this.databaseModel = {});
 
 	var choices = [{label:$L('拼音'), value:"1"},
   	{label:$L('五笔'), value:"2"},
@@ -41,7 +40,6 @@ DesktopAssistant.prototype.setup = function() {
 	this.controller.listen("study-toggle", Mojo.Event.propertyChange, this.handleStuToggle.bind(this));
 	this.controller.listen("background-toggle", Mojo.Event.propertyChange, this.handleBacToggle.bind(this));
 	this.controller.listen("punctuation-toggle", Mojo.Event.propertyChange, this.handlePunToggle.bind(this));
-	this.controller.listen("database-toggle", Mojo.Event.propertyChange, this.handleDbToggle.bind(this));
 }
 
 DesktopAssistant.prototype.initSrvSuccess = function(response) {
@@ -193,35 +191,6 @@ DesktopAssistant.prototype.handlePunToggleSuccess = function(response) {
 		this.punctModel.value = response.cnMode;
 	}
 	this.controller.modelChanged(this.punctModel);
-}
-
-DesktopAssistant.prototype.handleDbToggle = function() {
-		var request = new Mojo.Service.Request('palm://com.youjf.jisrv', {
-					method : 'toggle',
-					parameters : {},
-					onSuccess : this.handleDbToggleSuccess.bindAsEventListener(this)
-				});
-}
-
-DesktopAssistant.prototype.handleDbToggleSuccess = function(response) {
-	if(response.database) {
-		this.databaseModel.value = false;
-		this.studyModel.disabled = false;
-		this.backgModel.disabled = false;
-		this.punctModel.disabled = false;
-		this.imeModel.disabled = false;
-	}else {
-		this.databaseModel.value = true;
-		this.studyModel.disabled = true;
-		this.backgModel.disabled = true;
-		this.punctModel.disabled = true;
-		this.imeModel.disabled = true;
-	}
-	this.controller.modelChanged(this.studyModel);
-	this.controller.modelChanged(this.backgModel);
-	this.controller.modelChanged(this.punctModel);
-	this.controller.modelChanged(this.imeModel);
-	this.controller.modelChanged(this.databaseModel);
 }
 
 DesktopAssistant.prototype.showDashboard = function() {
