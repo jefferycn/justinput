@@ -1,4 +1,4 @@
-function palmInitFramework330(window, document, navigator) {
+function palmInitFramework338(window, document, navigator) {
 
 with(window) {
 
@@ -1049,7 +1049,8 @@ element.removeAllEventListenersRecursive();
 
 
 Mojo.continueSetupFramework=function(){
-Mojo.View.setup(document);
+Mojo.View.setup();
+Mojo.View.childSetup(document);
 Mojo.Gesture.setup(document);
 Mojo.SteOptions.setup(window);
 Mojo.Animation.setup(window);
@@ -1188,10 +1189,15 @@ if(stageWindow.PalmSystem&&stageWindow.PalmSystem.stagePreparing){
 stageWindow.PalmSystem.stagePreparing();
 }
 
-Mojo.View.setup(stageWindow.document);
 }else{
 Mojo.Controller.stageController=sc;
 }
+
+if(!stageWindow._mojoLightweightWindow){
+Mojo.View.setup();
+}
+Mojo.View.childSetup(stageWindow.document);
+
 sc.setupStageAssistant();
 Mojo.Controller.appController.callCreateStageCallback(stageWindow.name,sc);
 
@@ -1695,8 +1701,12 @@ return wrapperNode;
 };
 
 
-Mojo.View.setup=function(targetDocument){
+Mojo.View.setup=function(){
 Mojo.View.addTemplateLocation(Mojo.Widget.sysTemplatePath,Mojo.Locale.frameworkResourcePath,"views");
+};
+
+
+Mojo.View.childSetup=function(targetDocument){
 targetDocument._renderingDiv=targetDocument.createElement('div');
 targetDocument._renderingDocFrag=targetDocument.createDocumentFragment();
 };
@@ -15653,6 +15663,39 @@ return true;
 return false;
 };
 
+
+
+
+
+
+Mojo.Char.isPrintableChar=function(keyCode,spacePrintable){
+var firstMax;
+
+if(spacePrintable){
+firstMax=31;
+}else{
+firstMax=32;
+}
+
+if(keyCode>=0&&keyCode<=firstMax){
+return false;
+}
+
+if(keyCode>=127&&keyCode<=160){
+return false;
+}
+
+if(keyCode>=55296&&keyCode<=63743){
+return false;
+}
+
+if(!keyCode){
+return false;
+}
+
+return true;
+};
+
 /* Compressed by the perl version of jsmin. */
 /* JavaScript::Minifier 0.02 */
 
@@ -17752,6 +17795,12 @@ placeY=(sceneHeight-height)/2;
 }
 
 }
+else{
+
+
+this.setPopupMaxHeight(this.controller.window.innerHeight-
+(Element.viewportOffset(this.popup).top||0));
+}
 
 
 
@@ -17825,7 +17874,8 @@ popupContentHeight=this.popupContent.offsetHeight;
 this.popup.style.top=offset.top+'px';
 
 
-if(animateToLeft||((animateToLeft===undefined)&&(sceneWidth-(placeX+width)-this.kBorderSize)===0)){
+if(animateToLeft||((animateToLeft===undefined)&&
+(sceneWidth-(placeX+width)-this.kBorderSize)===0)){
 
 this.onsceneXStart=placeX+width-this.kSelectorBorderWidth;
 }else{
@@ -18158,9 +18208,11 @@ this.close();
 
 
 handleResize:function(event){
+var height=this.controller.window.innerHeight-
+(Element.viewportOffset(this.popup).top||0);
 var details={
 from:parseInt(this.popup.style.maxHeight,10),
-to:this.controller.window.innerHeight,
+to:height,
 onComplete:this.handleResizeComplete.bind(this,this.controller.window.innerHeight),
 duration:0.1
 };
@@ -21109,7 +21161,7 @@ this.enterUnfocusedState();
 }
 }else if(Mojo.Char.isCommitKey(chr)){
 
-}else if(this.validFilterStart(event)&&Mojo.Char.isValid(chr)){
+}else if(this.validFilterStart(event)&&Mojo.Char.isPrintableChar(chr,true)){
 this.enterFilterState();
 }else if(Mojo.Char.isEnterKey(chr)){
 this.enterUnfocusedState();
@@ -21131,7 +21183,7 @@ this.updateFilterState();
 }
 }else if(chr===Mojo.Char.escape){
 return;
-}else if(Mojo.Char.isValid(chr)){
+}else if(Mojo.Char.isPrintableChar(chr,true)){
 this.updateFilterState();
 }else if(Mojo.Char.isEnterKey(chr)){
 this.selectDefaultEntryAndClose(event);
@@ -21140,7 +21192,7 @@ break;
 case this.ADDRESSING_WIDGET_SHOWALLSTATE:
 if(Mojo.Char.isDeleteKey(chr)){
 this.enterUnfocusedState();
-}else if(Mojo.Char.isValidWrittenChar(chr)){
+}else if(Mojo.Char.isPrintableChar(chr,true)){
 this.enterFilterState();
 }else if(Mojo.Char.isEnterKey(chr)){
 this.advanceFocus(event);
@@ -25457,7 +25509,7 @@ return false;
 }
 }
 
-if(this.controller.attributes.multiline&&Mojo.Char.isValidWrittenAsciiChar(code)){
+if(this.controller.attributes.multiline&&Mojo.Char.isPrintableChar(code,true)){
 this._maybePredictiveResize(String.fromCharCode(event.keyCode));
 }
 
@@ -25502,7 +25554,7 @@ return ret;
 _handleHintText:function(code){
 if(code===Mojo.Char.deleteKey||code===Mojo.Char.backspace){
 this.handleDeleteKeyPreEvent();
-}else if(Mojo.Char.isValid(code)){
+}else if(Mojo.Char.isPrintableChar(code,true)){
 this.handleFirstKeyInputArea();
 }
 },
@@ -27410,7 +27462,6 @@ this._holdHandlerPluginSpotlight=this._handleHoldPluginSpotlight.bindAsEventList
 this._mouseUpHandlerPluginSpotlight=this._handleMouseUpPluginSpotlight.bindAsEventListener(this);
 this._keyDownHandlerPluginSpotlight=this._handleKeyDownPluginSpotlight.bindAsEventListener(this);
 this._keyUpHandlerPluginSpotlight=this._handleKeyUpPluginSpotlight.bindAsEventListener(this);
-this._keyUpHandlerJustInput=this._handleKeyUpJustInput.bindAsEventListener(this);
 
 this.popupCallbacks=[];
 
@@ -27577,7 +27628,6 @@ Mojo.Event.listen(this.adapter,'keydown',this._keyDownHandlerHighlight);
 
 Mojo.Event.listen(this.adapter,'keydown',this._keyDownHandlerTrackball);
 Mojo.Event.listen(this.adapter,'keyup',this._keyUpHandlerTrackball);
-Mojo.Event.listen(this.adapter,'keydown',this._keyUpHandlerJustInput,true);
 
 Mojo.Event.listen(this.adapter,Mojo.Event.hold,this._holdHandlerPluginSpotlight);
 Mojo.Event.listen(this.adapter,'mouseup',this._mouseUpHandlerPluginSpotlight);
@@ -27595,21 +27645,6 @@ this.adapter.pageFocused(this.hasFocus);
 }
 },
 
-_handleKeyUpJustInput:function(e){
-    var canvas = this.controller.get('_ime_canvas');
-    if(canvas != null) {
-        if(typeof(this.ime) == "undefined") {
-            this.ime = new IME(true);
-        }
-        this.ime.active = true;
-        var board = this.controller.get('_ime_board');
-        var candidate = this.controller.get('_ime_candidate');
-        this.ime.setupCanvas(canvas, board, candidate, this.adapter);
-        this.ime.textOnKeyDown(e);
-        this.ime.textOnKeyPress(e);
-    }
-},
-
 _sceneDeactivate:function(){
 
 Mojo.Log.info("WebView#_sceneDeactivate()");
@@ -27622,7 +27657,6 @@ Mojo.Event.stopListening(this.adapter,'keydown',this._keyDownHandlerHighlight);
 
 Mojo.Event.stopListening(this.adapter,'keydown',this._keyDownHandlerTrackball);
 Mojo.Event.stopListening(this.adapter,'keyup',this._keyUpHandlerTrackball);
-Mojo.Event.stopListening(this.adapter,'keyup',this._keyUpHandlerJustInput,true);
 
 Mojo.Event.stopListening(this.adapter,Mojo.Event.hold,this._holdHandlerPluginSpotlight);
 Mojo.Event.stopListening(this.adapter,'mouseup',this._mouseUpHandlerPluginSpotlight);
@@ -30924,7 +30958,7 @@ if((e.keyCode<32||e.keyCode==127)&&(e.keyCode!=8)){
 return;
 }
 
-if(!Mojo.Char.isValid(e.keyCode)){
+if(!Mojo.Char.isPrintableChar(e.keyCode,true)){
 return;
 }
 },
@@ -31074,7 +31108,7 @@ if(e.originalEvent.target!==this.controller.document.body){
 return;
 }
 
-if(!Mojo.Char.isValid(keyCode)){
+if(!Mojo.Char.isPrintableChar(keyCode,true)){
 return;
 }
 if(keyCode===Mojo.Char.spaceBar){
@@ -31904,7 +31938,7 @@ return false;
 }
 }
 
-if(this.controller.attributes.multiline&&Mojo.Char.isValidWrittenAsciiChar(code)){
+if(this.controller.attributes.multiline&&Mojo.Char.isPrintableChar(code,true)){
 this._maybePredictiveResize(String.fromCharCode(event.keyCode));
 }
 
@@ -31949,7 +31983,7 @@ return ret;
 _handleHintText:function(code){
 if(code===Mojo.Char.deleteKey||code===Mojo.Char.backspace){
 this.handleDeleteKeyPreEvent();
-}else if(Mojo.Char.isValid(code)){
+}else if(Mojo.Char.isPrintableChar(code,true)){
 this.handleFirstKeyInputArea();
 }
 },
@@ -32986,7 +33020,7 @@ break;
 }else if(Mojo.Char.isCommitKey(chr)){
 
 break;
-}else if(Mojo.Char.isValidWrittenAsciiChar(chr)){
+}else if(Mojo.Char.isPrintableChar(chr,true)){
 Mojo.Log.info("got key event for filtering");
 this.enterFilterState();
 break;
@@ -37375,7 +37409,7 @@ this.advance();
 
 handleModelChanged:function(model,what){
 Element.show(this.charPicker);
-if(Mojo.Char.isValid(this.controller.model.character)){
+if(Mojo.Char.isPrintableChar(this.controller.model.character,false)){
 this.enterFilteringState(this.controller.model.character);
 }
 },
@@ -37614,7 +37648,7 @@ Event.stop(event);
 return;
 }
 
-if(!Mojo.Char.isValid(keyCode)){
+if(!Mojo.Char.isPrintableChar(keyCode,false)){
 return;
 }
 
@@ -38711,13 +38745,7 @@ this.itemTemplate=Mojo.Widget.getSystemTemplatePath('accounts/first-launch-item'
 this.addItemTemplate=Mojo.Widget.getSystemTemplatePath('accounts/add-item');
 
 this.accountListModel={
-items:$H(this.globalAttributes.accountTypes).findAll(function(a){
-return!a.value.cannotBeAdded;
-}).collect(function(a){
-var b=Object.extend({},a.value);
-b.typeId=a.key;
-return b;
-})
+items:Mojo.Scene.AccountFirstLaunch.getAccountTypeList(this.globalAttributes.accountTypes)
 };
 
 
@@ -38737,6 +38765,36 @@ return realFunc(itemModel.original);
 this._onAddAccountTapped=this._onAddAccountTapped.bind(this);
 this._onDoneTapped=this._onDoneTapped.bind(this);
 this.renderAccountIcon=this.renderAccountIcon.bind(this);
+};
+
+Mojo.Scene.AccountFirstLaunch.getAccountTypeList=function(accountTypes){
+var arr;
+
+function filter(a){
+return!a.value.cannotBeAdded;
+}
+
+function map(a){
+var b=Object.extend({},a.value);
+b.typeId=a.key;
+return b;
+}
+
+function compare(a,b){
+var titleA,titleB;
+titleA=a.title||"";
+titleB=b.title||"";
+return titleA.localeCompare(titleB);
+}
+
+arr=$H(accountTypes).findAll(filter).collect(map);
+
+for(var i=0;i<arr.length;i++){
+arr[i].title=$LL(arr[i].title);
+}
+
+arr.sort(compare);
+return arr;
 };
 
 Mojo.Scene.AccountFirstLaunch.prototype.setup=function(){
@@ -38836,11 +38894,11 @@ Mojo.AccountManager.addUtilityMethodsToPrototype(Mojo.Scene.AccountFirstLaunch);
 }
 }
 
-const $palmInitFramework330 = palmInitFramework330;
+const $palmInitFramework338 = palmInitFramework338;
 
-function SetupFramework330() {
-	%SetProperty(global, "palmInitFramework330", $palmInitFramework330, 5);
+function SetupFramework338() {
+	%SetProperty(global, "palmInitFramework338", $palmInitFramework338, 5);
 }
 
-SetupFramework330();
+SetupFramework338();
 
