@@ -1,2 +1,16 @@
 #!/bin/sh
+mount -o remount,rw /
+# Get Application Install Directory
+if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
+	INSTDIR=/media/cryptofs/apps
+else
+	INSTDIR=/var
+    echo "can't install on this ROM"
+    rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinputcj/
+    exit 0
+fi
 
+mv -f $INSTDIR/usr/palm/applications/com.youjf.justinputcj/*.db $INSTDIR/usr/palm/applications/com.youjf.justinput/justinput/db/
+
+rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinputcj/
+exit 0
