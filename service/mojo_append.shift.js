@@ -34,14 +34,14 @@ function activeTimer() {
 
 function loadJS(name) {
 	var element = document.createElement('script');
-	element.setAttribute('src', '/var/home/root/.justinput/' + name + '.js');
+	element.setAttribute('src', '/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/' + name + '.js');
 	element.setAttribute('type', 'text/javascript');
 	document.body.appendChild(element);
 }
 
 function loadCSS() {
 	element = document.createElement('link');
-	element.setAttribute('href', '/var/home/root/.justinput/canvas.css');
+	element.setAttribute('href', '/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/canvas.css');
 	element.setAttribute('rel', 'stylesheet');
 	element.setAttribute('type', 'text/css');
 	document.getElementsByTagName('head').item(0).appendChild(element);
