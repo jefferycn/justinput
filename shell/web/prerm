@@ -1,2 +1,16 @@
 #!/bin/sh
+mount -o remount,rw /
+ORIDIR=/var/home/root/.justinput
 
+# a fully hack of framework
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
+    mv -f $ORIDIR/com.youjf.justinput/service/palmInitFramework338.ori.js /usr/palm/frameworks/mojo/builtins/
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js" ]; then
+    mv -f $ORIDIR/com.youjf.justinput/service/palmInitFramework347.ori.js /usr/palm/frameworks/mojo/builtins/ /usr/palm/frameworks/mojo/builtins/
+fi
+
+rm -rf $ORIDIR
+
+exit 0

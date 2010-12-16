@@ -5,34 +5,30 @@ if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 	INSTDIR=/media/cryptofs/apps
 else
 	INSTDIR=/var
+    echo "can't install on this ROM"
+    exit 0
 fi
 
 rm -rf /usr/palm/frameworks/mojo/justinput/
 rm -f /usr/lib/luna/java/justinput.jar
 rm -f /usr/share/dbus-1/system-services/com.youjf.jisrv.service
 rm -f /etc/event.d/com.youjf.com.justinput
+rm -f /usr/palm/frameworks/mojo/mojo.js.old
 
-if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js.jeffery" ]; then
-    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework200_72.js
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
+    rm -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery
+    mv -f $INSTDIR/clean_justin/palmInitFramework338.ori.js /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
 fi
 
-if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework330.js.jeffery" ]; then
-    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework330.js
-fi
-
-if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery" ]; then
-    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
-fi
-
-if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery" ]; then
-    mv -f /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js" ]; then
+    rm -f /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js.jeffery
+    mv -f $INSTDIR/clean_justin/palmInitFramework347.ori.js  /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js
 fi
 
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
 EndLine=`sed -n "/justinput hack end/=" ${HackFile}`
 if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
-    cp -f ${HackFile} ${HackFile}.old
     sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
     mv -f ${HackFile}.tmp ${HackFile}
 fi

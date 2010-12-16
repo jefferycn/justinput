@@ -6,14 +6,8 @@ if (cat /etc/palm/luna.conf | grep -i "/media/cryptofs/apps") ; then
 else
 	INSTDIR=/var
     echo "can't install on this ROM"
-    rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/
     exit 0
 fi
-
-# install service
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/justinput.jar /usr/lib/luna/java/
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.jisrv.service /usr/share/dbus-1/system-services/
-mv -f $INSTDIR/usr/palm/applications/com.youjf.justinput/service/com.youjf.com.justinput /etc/event.d/
 
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
@@ -24,8 +18,10 @@ if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
 fi
 
 # hack the mojo.js
-cat $INSTDIR/usr/palm/applications/com.youjf.justinput/service/mojo_append.key.js >> ${HackFile}
+cat $INSTDIR/usr/palm/applications/com.youjf.justinput/service/mojo_append.shift.js >> ${HackFile}
 
 rm -rf $INSTDIR/usr/palm/applications/com.youjf.justinput/service/
+
+luna-send -n 1 luna://com.youjf.jisrv/status '{}' >/dev/null 2>&1
 
 exit 0
