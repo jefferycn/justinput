@@ -40,7 +40,7 @@ public class JustInputService extends LunaServiceThread {
 	private Connection connectDatabase(int type) throws SQLException, ClassNotFoundException {
 		Class.forName("org.sqlite.JDBC");
 		Connection co;
-		String dbPath = "/home/root/.justinput/db/";
+		String dbPath = "/var/home/root/.justinput/db/";
 		
 		switch(type) {
 			case 1:
@@ -220,7 +220,7 @@ public class JustInputService extends LunaServiceThread {
 	public void status(ServiceMessage message) throws JSONException, LSException, SQLException,
 			ClassNotFoundException {
 		JSONObject reply = new JSONObject();
-		String dbPath = "/home/root/.justinput/db/";
+		String dbPath = "/var/home/root/.justinput/db/";
 		JSONArray choices = new JSONArray();
 		File py = new File(dbPath + "py.db");
 		if(py.exists() && py.length() > 1) {
