@@ -3,6 +3,13 @@ function DesktopAssistant() {
 }
 
 DesktopAssistant.prototype.setup = function() {
+	this.controller.setupWidget('text', this.attributes = {
+				multiline : true,
+				focus : true,
+				textCase : Mojo.Widget.steModeLowerCase,
+				changeOnKeyPress : true
+			}, this.model = {});
+	
 	this.appMenuModel = {
 		visible : true,
 		items : [Mojo.Menu.editItem, {
@@ -36,10 +43,23 @@ DesktopAssistant.prototype.setup = function() {
   	
 	this.controller.setupWidget('ime-selector', {label: $L('输入法'), choices: choices}, this.imeModel = {});
 	
+	this.controller.get('text').observe(Mojo.Event.propertyChange, this.textOnPropertyChange.bind(this), true);
 	this.controller.listen("ime-selector", Mojo.Event.propertyChange, this.handleImeChange.bind(this));
 	this.controller.listen("study-toggle", Mojo.Event.propertyChange, this.handleStuToggle.bind(this));
 	this.controller.listen("background-toggle", Mojo.Event.propertyChange, this.handleBacToggle.bind(this));
 	this.controller.listen("punctuation-toggle", Mojo.Event.propertyChange, this.handlePunToggle.bind(this));
+}
+
+DesktopAssistant.prototype.textOnPropertyChange = function(e) {
+	var text = this.controller.get('text');
+	var result = text.mojo.getValue();
+	if (!result) {
+		return false;
+	}
+	var pos = text.mojo.getCursorPosition();
+	text.mojo.setCursorPosition(0, result.length);
+	document.execCommand('copy');
+	text.mojo.setCursorPosition(pos.selectionStart, pos.selectionStart);
 }
 
 DesktopAssistant.prototype.initSrvSuccess = function(response) {
