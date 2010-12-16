@@ -129,7 +129,7 @@ IME.prototype = {
 		if(document.getElementById('_ime_canvas') === null) {
 			var canvas = '<div class="justinputCanvas" id="_ime_canvas" style="z-index:99999999;"><div class="contentWrap"><ul class="boardWrap"><li id="_ime_board"></li></ul><ul class="tabWrapTop" id="_ime_candidate"></ul></div></div>';
 			document.body.insert({after : canvas});
-			var status = '<div id="_ime_status" style="position: absolute;z-index:99999999;"><img src="/usr/palm/frameworks/mojo/justinput/status-available-dark.png"></div>';
+			var status = '<div id="_ime_status" style="position: absolute;z-index:99999999;"><img src="/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/status-available-dark.png"></div>';
 			document.body.insert({after : status});
 			this.status = document.getElementById('_ime_status');
 			
@@ -417,10 +417,18 @@ IME.prototype = {
 				if(this.type > 1 && key == this.spliterKey) {
 					return String.fromCharCode(key);
 				}
-				if (key >= 65 && key <= 90) {
-					// force uppercase to lower case
+				// shift == true, all to upper
+				if (e.shiftKey == true && key >= 97 && key <= 122) {
+					// force the first uppercase key to lower case
+					key -= 32;
+				}
+				// shift == false, all to lower
+				if (e.shiftKey == false && key >= 65 && key <= 90) {
+					// force the first uppercase key to lower case
 					key += 32;
 				}
+				
+				console.log("key: " + key + "; String: " + String.fromCharCode(key));
 			if (this.inArray(this.type, [2, 3, 4])) {
 				var maxLength;
 				if(this.type == 2) {
