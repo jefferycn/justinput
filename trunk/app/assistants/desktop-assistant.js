@@ -58,7 +58,7 @@ DesktopAssistant.prototype.textOnPropertyChange = function(e) {
 	}
 	var pos = text.mojo.getCursorPosition();
 	text.mojo.setCursorPosition(0, result.length);
-	document.execCommand('copy');
+	this.controller.document.execCommand('copy');
 	text.mojo.setCursorPosition(pos.selectionStart, pos.selectionStart);
 }
 
