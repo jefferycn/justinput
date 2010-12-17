@@ -1,0 +1,13 @@
+#!/bin/sh
+mount -o remount,rw /
+INSTDIR=/media/cryptofs/apps
+PATCHDIR=$INSTDIR/usr/palm/applications/com.youjf.webpatch/
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
+    mv -f $PATCHDIR/palmInitFramework338.ori.js /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js
+fi
+
+if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework347.js" ]; then
+    mv -f $PATCHDIR/palmInitFramework347.ori.js /usr/palm/frameworks/mojo/builtins/palmInitFramework347.js
+fi
+
+exit 0

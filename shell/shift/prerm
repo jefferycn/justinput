@@ -1,8 +1,0 @@
-#!/bin/sh
-HackFile="/usr/palm/frameworks/mojo/mojo.js"
-StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
-EndLine=`sed -n "/justinput hack end/=" ${HackFile}`
-if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
-    sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
-    mv -f ${HackFile}.tmp ${HackFile}
-fi

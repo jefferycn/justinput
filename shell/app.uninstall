@@ -1,4 +1,12 @@
 #!/bin/sh
+mount -o remount,rw /
+# Get Application Install Directory
+INSTDIR=/media/cryptofs/apps
+
+rm -f /usr/lib/luna/java/justinput.jar
+rm -f /usr/share/dbus-1/system-services/com.youjf.jisrv.service
+rm -f /etc/event.d/com.youjf.com.justinput
+
 HackFile="/usr/palm/frameworks/mojo/mojo.js"
 StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
 EndLine=`sed -n "/justinput hack end/=" ${HackFile}`
@@ -6,3 +14,5 @@ if ((test ${StartLine} > 0) && (test ${EndLine} > 0)) then
     sed "${StartLine},${EndLine}d" "${HackFile}" > ${HackFile}.tmp
     mv -f ${HackFile}.tmp ${HackFile}
 fi
+
+exit 0
