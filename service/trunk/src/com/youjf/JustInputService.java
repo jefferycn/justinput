@@ -1,7 +1,6 @@
 package com.youjf;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,7 +19,7 @@ import com.palm.luna.service.ServiceMessage;
 
 public class JustInputService extends LunaServiceThread {
 
-	private String version = "1.4.1-5";
+	private String version = "1.4.3";
 	private Connection db;
 	private boolean cnMode = false;
 	private boolean studyMode = true;
@@ -28,6 +27,7 @@ public class JustInputService extends LunaServiceThread {
 	private int IME = 1;
 	private boolean sync = false;
 	private HashMap<String, Boolean> keys;
+	private String appPath = "/var/home/root/.justinput/";
 
 	public JustInputService() throws ClassNotFoundException, SQLException, JSONException {
 		getAllConfig();
@@ -40,7 +40,7 @@ public class JustInputService extends LunaServiceThread {
 	private Connection connectDatabase(int type) throws SQLException, ClassNotFoundException {
 		Class.forName("org.sqlite.JDBC");
 		Connection co;
-		String dbPath = "/var/home/root/.justinput/db/";
+		String dbPath = appPath + "db/";
 		
 		switch(type) {
 			case 1:
@@ -220,7 +220,7 @@ public class JustInputService extends LunaServiceThread {
 	public void status(ServiceMessage message) throws JSONException, LSException, SQLException,
 			ClassNotFoundException {
 		JSONObject reply = new JSONObject();
-		String dbPath = "/var/home/root/.justinput/db/";
+		String dbPath = appPath + "db/";
 		JSONArray choices = new JSONArray();
 		File py = new File(dbPath + "py.db");
 		if(py.exists() && py.length() > 1) {
@@ -299,23 +299,6 @@ public class JustInputService extends LunaServiceThread {
 		}
 		JSONObject reply = new JSONObject();
 		message.respond(reply.put("backgroundMode", backgroundMode).toString());
-	}
-
-	@LunaServiceThread.PublicMethod
-	public void toggle(ServiceMessage message) throws JSONException, LSException, SQLException,
-			ClassNotFoundException, IOException {
-		boolean database;
-		if (db.isClosed()) {
-			Runtime sh = Runtime.getRuntime();
-			sh.exec("mount -o remount,rw /");
-			db = connectDatabase(IME);
-			database = true;
-		}else {
-			db.close();
-			database = false;
-		}
-		JSONObject reply = new JSONObject();
-		message.respond(reply.put("database", database).toString());
 	}
 
 	@LunaServiceThread.PublicMethod
@@ -421,7 +404,7 @@ public class JustInputService extends LunaServiceThread {
 		if(query.startsWith("v") || query.startsWith("u") || query.startsWith("i")) {
 			sons.put(query);
 		}else {
-			sons = splitQuery(query);
+			sons = splitQuery(query.toLowerCase());
 			sons = reserse(sons);
 
 			String outer = "select id, value, score, rank, length, start from (%s) order by length desc, rank desc limit ? offset ?;";

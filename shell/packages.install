@@ -1,10 +1,10 @@
 #!/bin/sh
 mount -o remount,rw /
 INSTDIR=/media/cryptofs/apps
-APPDIR=$INSTDIR/usr/palm/applications/com.youjf.justinput/
+DBPATH=/var/home/root/.justinput/
 PATCHDIR=$INSTDIR/usr/palm/applications/com.youjf.addons/
-if [ -d "${APPDIR}/justinput/db/" ]; then
-    mv -f $PATCHDIR/*.db $APPDIR/justinput/db/
+if [ -d "${DBPATH}/db/" ]; then
+    mv -f $PATCHDIR/*.db $DBPATH/db/
 fi
 
 killall -9 java

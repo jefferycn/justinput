@@ -1,9 +1,9 @@
 #!/bin/sh
 mount -o remount,rw /
 INSTDIR=/media/cryptofs/apps
-APPDIR=$INSTDIR/usr/palm/applications/com.youjf.justinput/
+DBDIR=/var/home/root/.justinput/
 PATCHDIR=$INSTDIR/usr/palm/applications/com.youjf.addons/
-if [ -f "${APPDIR}/justinput/db/config.db" ]; then
+if [ -f "${DBDIR}/db/config.db" ]; then
     HackFile="/usr/palm/frameworks/mojo/mojo.js"
     StartLine=`sed -n "/justinput hack start/=" ${HackFile}`
     EndLine=`sed -n "/justinput hack end/=" ${HackFile}`

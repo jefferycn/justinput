@@ -17,6 +17,7 @@ rm -f /usr/lib/luna/java/justinput.jar
 rm -f /usr/share/dbus-1/system-services/com.youjf.jisrv.service
 rm -f /etc/event.d/com.youjf.com.justinput
 rm -f /usr/palm/frameworks/mojo/mojo.js.old
+rm -rf /var/home/root/.justinput/
 
 if [ -f "/usr/palm/frameworks/mojo/builtins/palmInitFramework338.js" ]; then
     rm -f /usr/palm/frameworks/mojo/builtins/palmInitFramework338.js.jeffery
