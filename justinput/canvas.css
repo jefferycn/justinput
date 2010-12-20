@@ -2,7 +2,7 @@
 position: absolute;
 color: #333;
 text-decoration: none;
--webkit-border-image: url(/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/palm-popup-background.png) 24 24 24 24 repeat repeat;
+-webkit-border-image: url(/usr/palm/frameworks/mojo/justinput/palm-popup-background.png) 24 24 24 24 repeat repeat;
 -webkit-box-sizing: border-box;
 border-width: 24px;
 height: 74px;

@@ -33,14 +33,14 @@ document.onkeyup = function(event) {
 
 function loadJS(name) {
 	var element = document.createElement('script');
-	element.setAttribute('src', '/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/' + name + '.js');
+	element.setAttribute('src', '/usr/palm/frameworks/mojo/justinput/' + name + '.js');
 	element.setAttribute('type', 'text/javascript');
 	document.body.appendChild(element);
 }
 
 function loadCSS() {
 	element = document.createElement('link');
-	element.setAttribute('href', '/media/cryptofs/apps/usr/palm/applications/com.youjf.justinput/justinput/canvas.css');
+	element.setAttribute('href', '/usr/palm/frameworks/mojo/justinput/canvas.css');
 	element.setAttribute('rel', 'stylesheet');
 	element.setAttribute('type', 'text/css');
 	document.getElementsByTagName('head').item(0).appendChild(element);
